@@ -1,0 +1,9 @@
+[*]
+end_of_line = lf
+indent_size = 4
+indent_style = space
+insert_final_newline = true
+
+[Makefile.am]
+indent_size = 8
+indent_style = tab

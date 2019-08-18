@@ -1,0 +1,135 @@
+#!/usr/bin/env python3
+#
+# Copyright (c) 2019, Hans Jerry Illikainen <hji@dyntopia.com>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+import sys
+from argparse import ArgumentParser
+from fnmatch import fnmatch
+from os import chdir
+from os.path import abspath, join
+from shutil import which
+from subprocess import STDOUT, CalledProcessError, check_output
+
+
+def check_clang_analyzer():
+    code, msg = run("clang-check", "-analyze", *ls("*.c"), stderr=STDOUT)
+    sys.stderr.write(msg)
+    return code or len(msg)
+
+
+def check_clang_tidy():
+    code, msg = run("clang-tidy", *ls("*.c"))
+    sys.stderr.write(msg)
+    return code or len(msg)
+
+
+def check_clang_format():
+    rv = 0
+    for path in ls("*.[ch]", ignore="*/emacs-module.h"):
+        code, msg = run("clang-format", path)
+        rv += code
+        if code:
+            continue
+
+        code, msg = run("diff", "-u", "--color=always", path, "-", stdin=msg)
+        sys.stderr.write(msg)
+        rv += code
+    return rv
+
+
+def check_cppcheck():
+    code, msg = run(
+        "cppcheck",
+        "--quiet",
+        "--error-exitcode=1",
+        "--inconclusive",
+        "--inline-suppr",
+        "--enable=all",
+        "--suppress=missingIncludeSystem",
+        "--suppress=variableScope",
+        "--template={file}:{line}:{severity}:{id}: {message}",
+        "-I./include",
+        "src",
+        stderr=STDOUT,
+    )
+    sys.stderr.write(msg)
+    return code or len(msg)
+
+
+def fix_clang_format():
+    code, _ = run("clang-format", "-i", *ls("*.[ch]"))
+    return code
+
+
+def ls(*args, ignore=""):
+    code, msg = run("git", "ls-files", "-z", *args)
+    if not code:
+        return [x for x in msg.split("\0") if x and not fnmatch(x, ignore)]
+    return []
+
+
+def run(prog, *args, stdin=None, **kwargs):
+    if not which(prog):
+        sys.stderr.write("ERROR: missing {}\n".format(prog))
+        return 1, ""
+
+    try:
+        if stdin:
+            kwargs["input"] = stdin.encode()
+        return 0, check_output([prog, *args], **kwargs).decode()
+    except CalledProcessError as e:
+        return e.returncode, e.output.decode()
+
+
+def start(fun):
+    sys.stdout.write("=> starting {}\n".format(fun.__name__))
+    return fun()
+
+
+def parse_args():
+    ap = ArgumentParser()
+    ap.add_argument("--check-clang-analyzer", "--cca", action="store_true")
+    ap.add_argument("--check-clang-tidy", "--cct", action="store_true")
+    ap.add_argument("--check-clang-format", "--ccf", action="store_true")
+    ap.add_argument("--check-cppcheck", "--ccc", action="store_true")
+    ap.add_argument("--check-all", "--ca", action="store_true")
+    ap.add_argument("--fix-all", "--fa", action="store_true")
+    ap.add_argument("--fix-clang-format", "--fcf", action="store_true")
+    return ap.parse_args()
+
+
+def main():
+    rv = 0
+    chdir(abspath(join(sys.argv[0], "..", "..")))
+
+    args = parse_args()
+    if args.check_all:
+        rv += start(check_clang_analyzer)
+        rv += start(check_clang_tidy)
+        rv += start(check_clang_format)
+        rv += start(check_cppcheck)
+    elif args.check_clang_analyzer:
+        rv += start(check_clang_analyzer)
+    elif args.check_clang_tidy:
+        rv += start(check_clang_tidy)
+    elif args.check_clang_format:
+        rv += start(check_clang_format)
+    elif args.check_cppcheck:
+        rv += start(check_cppcheck)
+    elif args.fix_all:
+        rv += start(fix_clang_format)
+    elif args.fix_clang_format:
+        rv += start(fix_clang_format)
+    else:
+        sys.stderr.write("usage: {} <action>\n".format(sys.argv[0]))
+        rv += 1
+
+    if rv:
+        sys.stderr.write("\nat least one error found\n")
+    return rv != 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

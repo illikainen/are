@@ -1,0 +1,55 @@
+#!/usr/bin/env python3
+#
+# Copyright (c) 2019, Hans Jerry Illikainen <hji@dyntopia.com>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Wrapper that generates compile_commands.json.
+
+import sys
+from json import dump, load
+from os import getcwd, getenv
+from os.path import isfile, join
+from shutil import which
+from subprocess import call
+
+
+def add_file(db, directory, path, args):
+    entries = [{
+        "directory": directory,
+        "file": path,
+        "arguments": args,
+    }]
+    try:
+        with open(db, "r") as f:
+            entries += [x for x in load(f) if not x["file"] == path]
+    except FileNotFoundError:
+        pass
+    with open(db, "w") as f:
+        dump(entries, f, indent=4)
+
+
+def main():
+    cc = getenv("REALCC") or which("clang") or which("gcc")
+    args = [cc, *sys.argv[1:]]
+    gendb = next((x for x in sys.argv if x.startswith("-DGENDB=")), None)
+    if gendb:
+        db = join(gendb[len("-DGENDB="):], "compile_commands.json")
+        directory = getcwd()
+        try:
+            idx = args.index("-c") + 1
+            path = join(directory, args[idx])
+            if not isfile(path):
+                raise ValueError()
+            # clang-tidy 3.8.1 segfaults on relative paths in the
+            # compile command.
+            args[idx] = path
+        except ValueError:
+            sys.stderr.write("ERROR: cannot determine source file\n")
+            return 1
+        add_file(db, directory, path, args)
+    return call(args)
+
+
+if __name__ == "__main__":
+    sys.exit(main())
