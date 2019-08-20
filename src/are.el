@@ -19,6 +19,21 @@
   :group 'are
   :type '(choice (const :tag "PCRE2" pcre2)))
 
+(defcustom are-compile-options nil
+  "Default compile options."
+  :group 'are
+  :type 'list)
+
+(defcustom are-match-options nil
+  "Default match options."
+  :group 'are
+  :type 'list)
+
+(defcustom are-debug nil
+  "Whether to show debug messages"
+  :group 'are
+  :type 'boolean)
+
 (defcustom are-library
   (concat (file-name-as-directory
            (directory-file-name
