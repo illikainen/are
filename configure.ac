@@ -42,6 +42,7 @@ AC_CHECK_HEADERS([uthash.h utlist.h], [], [AC_MSG_ERROR([Missing uthash-dev])])
 # Check for PCRE2.
 AC_CHECK_HEADERS([pcre2.h], [enable_pcre2="yes"], [],
     [#define PCRE2_CODE_UNIT_WIDTH 8])
+AM_CONDITIONAL([PCRE2], [test "$enable_pcre2" = "yes"])
 if test "$enable_pcre2" = "yes"; then
     CFLAGS="$CFLAGS -DPCRE2_CODE_UNIT_WIDTH=8"
     LDFLAGS="$LDFLAGS -lpcre2-8"
@@ -71,6 +72,7 @@ if test "$enable_asan" = "yes"; then
     CFLAGS="$CFLAGS -fno-omit-frame-pointer"
     CFLAGS="$CFLAGS -fno-optimize-sibling-calls"
 fi
+AM_CONDITIONAL([ASAN], [test "$enable_asan" = "yes"])
 
 cat <<EOF
 
