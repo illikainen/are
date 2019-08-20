@@ -22,6 +22,11 @@ struct string *extract_string(emacs_env *env, emacs_value value)
     intmax_t len;
     ptrdiff_t size;
 
+    if (!is_string(env, value)) {
+        non_local_exit_signal(env, "Invalid type");
+        return NULL;
+    }
+
     len = extract_integer(env, funcall(env, "length", 1, value));
     if (len < 0) {
         non_local_exit_signal(env, "invalid string");
@@ -38,9 +43,9 @@ struct string *extract_string(emacs_env *env, emacs_value value)
         non_local_exit_signal(env, "oom");
         return NULL;
     }
+    s->len = len;
 
-    if (__builtin_mul_overflow(len, 1, &s->len) ||
-        __builtin_mul_overflow(size, 1, &s->size)) {
+    if (__builtin_mul_overflow(size, 1, &s->size)) {
         free(s);
         non_local_exit_signal(env, "overflow detected");
         return NULL;
@@ -80,7 +85,7 @@ emacs_value make_string(emacs_env *env, const char *str)
 {
     ptrdiff_t len;
 
-    if (str && __builtin_mul_overflow(strlen(str), 1, &len)) {
+    if (str && !__builtin_mul_overflow(strlen(str), 1, &len)) {
         return env->make_string(env, str, len);
     }
     return env->intern(env, "nil");
