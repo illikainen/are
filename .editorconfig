@@ -4,6 +4,9 @@ indent_size = 4
 indent_style = space
 insert_final_newline = true
 
+[*.el]
+indent_size = none
+
 [Makefile.am]
 indent_size = 8
 indent_style = tab
