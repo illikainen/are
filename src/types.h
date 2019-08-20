@@ -11,7 +11,7 @@
 
 struct string {
     char *str;
-    size_t len;
+    intmax_t len;
     size_t size;
 };
 
