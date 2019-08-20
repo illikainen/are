@@ -1,7 +1,10 @@
 *.la
 *.lo
+*.log
 *.o
 *.plist
+*.so
+*.trs
 Makefile
 Makefile.in
 TAGS
@@ -21,3 +24,4 @@ missing
 src/.deps/
 src/.libs/
 stamp-h1
+test-driver
