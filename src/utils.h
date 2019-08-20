@@ -18,6 +18,8 @@ void make_function(emacs_env *env, const char *name, fun *fun,
                    ptrdiff_t min_arity, ptrdiff_t max_arity,
                    const char *docstring, void *data);
 emacs_value funcall(emacs_env *env, const char *fun, ptrdiff_t nargs, ...);
+emacs_value apply(emacs_env *env, const char *fun, ptrdiff_t nargs,
+                  emacs_value args[]);
 void non_local_exit_signal(emacs_env *env, const char *fmt, ...);
 int msprintf(char **strp, const char *fmt, ...);
 int vmsprintf(char **strp, const char *fmt, va_list ap);

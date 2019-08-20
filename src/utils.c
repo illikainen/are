@@ -11,6 +11,22 @@
 #include "utils.h"
 
 /*
+ * Apply `fun` with `nargs` of `args`.
+ */
+emacs_value apply(emacs_env *env, const char *fun, ptrdiff_t nargs,
+                  emacs_value args[])
+{
+    emacs_value funsym;
+
+    funsym = env->intern(env, fun);
+    if (env->is_not_nil(env, funsym)) {
+        return env->funcall(env, funsym, nargs, args);
+    }
+
+    return env->intern(env, "nil");
+}
+
+/*
  * Invoke `fun` with `nargs` of emacs_value arguments.
  */
 emacs_value funcall(emacs_env *env, const char *fun, ptrdiff_t nargs, ...)
