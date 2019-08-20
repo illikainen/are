@@ -99,5 +99,5 @@ module_register_fun(are_string_match, "are-string-match", 1, 4,
  */
 void are_add_engine(struct are_engine *engine)
 {
-    HASH_ADD_KEYPTR(hh, engines, engine->name, strlen(engine->name), engine);
+    HASH_ADD_STR(engines, name, engine);
 }
