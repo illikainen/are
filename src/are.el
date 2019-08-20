@@ -14,7 +14,7 @@
   :group 'are
   :prefix "are-")
 
-(defcustom are-engines 'pcre2
+(defcustom are-engine 'pcre2
   "Regexp engine to use."
   :group 'are
   :type '(choice (const :tag "PCRE2" pcre2)))
