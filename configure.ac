@@ -40,12 +40,12 @@ fi
 AC_CHECK_HEADERS([uthash.h utlist.h], [], [AC_MSG_ERROR([Missing uthash-dev])])
 
 # Check for PCRE2.
-AC_CHECK_HEADERS(
-    [pcre2.h],
-    [enable_pcre="yes" LDFLAGS="$LDFLAGS -lpcre2-8"],
-    [],
-    [#define PCRE2_CODE_UNIT_WIDTH 8]
-)
+AC_CHECK_HEADERS([pcre2.h], [enable_pcre2="yes"], [],
+    [#define PCRE2_CODE_UNIT_WIDTH 8])
+if test "$enable_pcre2" = "yes"; then
+    CFLAGS="$CFLAGS -DPCRE2_CODE_UNIT_WIDTH=8"
+    LDFLAGS="$LDFLAGS -lpcre2-8"
+fi
 
 # Check for emacs.
 AC_PATH_PROG([emacs], [emacs], [no])
@@ -77,7 +77,7 @@ cat <<EOF
     Build options
     =============
     Enable ASAN: ${enable_asan:-no}
-    Enable PCRE: ${enable_pcre:-no}
+    Enable PCRE2: ${enable_pcre2:-no}
 
 EOF
 
