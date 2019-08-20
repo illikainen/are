@@ -13,14 +13,17 @@
 /*
  * Apply `fun` with `nargs` of `args`.
  */
-emacs_value apply(emacs_env *env, const char *fun, ptrdiff_t nargs,
+emacs_value apply(emacs_env *env, const char *fun, size_t nargs,
                   emacs_value args[])
 {
     emacs_value funsym;
+    ptrdiff_t pnargs;
 
-    funsym = env->intern(env, fun);
-    if (env->is_not_nil(env, funsym)) {
-        return env->funcall(env, funsym, nargs, args);
+    if (!__builtin_mul_overflow(nargs, 1, &pnargs)) {
+        funsym = env->intern(env, fun);
+        if (env->is_not_nil(env, funsym)) {
+            return env->funcall(env, funsym, pnargs, args);
+        }
     }
 
     return env->intern(env, "nil");
@@ -29,12 +32,11 @@ emacs_value apply(emacs_env *env, const char *fun, ptrdiff_t nargs,
 /*
  * Invoke `fun` with `nargs` of emacs_value arguments.
  */
-emacs_value funcall(emacs_env *env, const char *fun, ptrdiff_t nargs, ...)
+emacs_value funcall(emacs_env *env, const char *fun, size_t nargs, ...)
 {
-    ptrdiff_t i;
+    size_t i;
     size_t size;
     va_list ap;
-    emacs_value funsym;
     emacs_value *args = NULL;
     emacs_value rv = env->intern(env, "nil");
 
@@ -55,10 +57,7 @@ emacs_value funcall(emacs_env *env, const char *fun, ptrdiff_t nargs, ...)
         va_end(ap);
     }
 
-    funsym = env->intern(env, fun);
-    if (env->is_not_nil(env, funsym)) {
-        rv = env->funcall(env, funsym, nargs, args);
-    }
+    rv = apply(env, fun, nargs, args);
 
     free(args);
     return rv;
