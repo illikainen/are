@@ -91,6 +91,23 @@ void non_local_exit_signal(emacs_env *env, const char *fmt, ...)
 /*
  * Allocate a buffer and populate it with a string according to `fmt`.
  *
+ * Similar to the non-standard function `asprintf()`.
+ */
+int __attribute__((format(printf, 2, 3)))
+msprintf(char **strp, const char *fmt, ...)
+{
+    va_list ap;
+    int rv;
+
+    va_start(ap, fmt);
+    rv = vmsprintf(strp, fmt, ap);
+    va_end(ap);
+    return rv;
+}
+
+/*
+ * Allocate a buffer and populate it with a string according to `fmt`.
+ *
  * Similar to the non-standard function `vasprintf()`.
  */
 int __attribute__((format(printf, 2, 0)))
