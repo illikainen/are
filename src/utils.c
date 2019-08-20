@@ -129,7 +129,7 @@ vmsprintf(char **strp, const char *fmt, va_list ap)
     len = vsnprintf(NULL, 0, fmt, tmp);
     va_end(tmp);
 
-    if (len >= 0 && __builtin_add_overflow(len, 1, &size)) {
+    if (len >= 0 && !__builtin_add_overflow(len, 1, &size)) {
         *strp = malloc(size);
         if (*strp) {
             rv = vsnprintf(*strp, size, fmt, ap);
