@@ -17,6 +17,7 @@ BreakBeforeBinaryOperators: None
 BreakBeforeBraces: Linux
 BreakBeforeTernaryOperators: false
 ColumnLimit: 80
+Cpp11BracedListStyle: false
 DerivePointerAlignment: false
 ForEachMacros:
   - 'LL_FOREACH'
