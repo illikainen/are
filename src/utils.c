@@ -65,6 +65,20 @@ emacs_value funcall(emacs_env *env, const char *fun, ptrdiff_t nargs, ...)
 }
 
 /*
+ * Retrieve the value for the symbol with `name` if it's bound.
+ */
+emacs_value value_of(emacs_env *env, const char *name)
+{
+    emacs_value symbol;
+
+    symbol = env->intern(env, name);
+    if (env->is_not_nil(env, funcall(env, "boundp", 1, symbol))) {
+        return funcall(env, "symbol-value", 1, symbol);
+    }
+    return env->intern(env, "nil");
+}
+
+/*
  * Expose a function to elisp.
  */
 void make_function(emacs_env *env, const char *name, fun *fun,
