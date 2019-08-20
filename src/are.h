@@ -14,7 +14,7 @@
 struct are_engine {
     const char *name;
     emacs_value (*string_match)(emacs_env *env, struct string *regexp,
-                                struct string *str, intmax_t start);
+                                struct string *str, size_t start);
     UT_hash_handle hh;
 };
 

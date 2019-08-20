@@ -39,9 +39,9 @@ struct string *extract_string(emacs_env *env, emacs_value value)
     if (s == NULL) {
         return NULL;
     }
-    s->len = len;
 
-    if (__builtin_mul_overflow(size, 1, &s->size)) {
+    if (__builtin_mul_overflow(len, 1, &s->len) ||
+        __builtin_mul_overflow(size, 1, &s->size)) {
         free(s);
         return NULL;
     }
@@ -122,4 +122,17 @@ bool is_integer(emacs_env *env, emacs_value value)
     integer = env->intern(env, "integer");
     type = env->type_of(env, value);
     return env->eq(env, type, integer);
+}
+
+/*
+ * Create an emacs value from size_t `value`.
+ */
+emacs_value make_size(emacs_env *env, size_t value)
+{
+    intmax_t i;
+
+    if (__builtin_mul_overflow(value, 1, &i)) {
+        return env->intern(env, "nil");
+    }
+    return make_integer(env, i);
 }

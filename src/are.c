@@ -48,7 +48,7 @@ static emacs_value are_string_match(emacs_env *env, ptrdiff_t nargs,
     struct are_engine *engine;
     struct string *regexp = NULL;
     struct string *str = NULL;
-    intmax_t start = 0;
+    size_t start = 0;
     emacs_value rv = env->intern(env, "nil");
 
     (void)data;
@@ -70,8 +70,8 @@ static emacs_value are_string_match(emacs_env *env, ptrdiff_t nargs,
     }
 
     if (nargs > 2 && is_integer(env, args[2])) {
-        start = extract_integer(env, args[2]);
-        if (start < 0 || start > str->len) {
+        if (__builtin_mul_overflow(extract_integer(env, args[2]), 1, &start) ||
+            start > str->len) {
             non_local_exit_signal(env, "Invalid start position");
             goto out;
         }
