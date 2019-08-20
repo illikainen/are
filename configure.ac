@@ -24,7 +24,7 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])], [have_everything="yes"])
 CFLAGS="$save_CFLAGS"
 
 if test "$have_everything" = "yes"; then
-    CFLAGS="$CFLAGS -Weverything"
+    CFLAGS="$CFLAGS -Weverything -Wno-disabled-macro-expansion -Wno-padded"
 fi
 
 # Check for integer overflow check macros.
