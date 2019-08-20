@@ -48,13 +48,13 @@ if test "$enable_pcre2" = "yes"; then
 fi
 
 # Check for emacs.
-AC_PATH_PROG([emacs], [emacs], [no])
-if test "$emacs" = "no"; then
+AC_PATH_PROG([EMACS], [emacs], [no])
+if test "$EMACS" = "no"; then
     AC_MSG_ERROR([Cannot locate emacs])
 fi
 
 # Check if Emacs was compiled with --with-modules.
-if ! $emacs -Q --batch --eval "(or (fboundp 'module-load) (kill-emacs 1))"; then
+if ! $EMACS -Q --batch --eval "(or (fboundp 'module-load) (kill-emacs 1))"; then
     AC_MSG_ERROR([Emacs was not compiled with --with-modules])
 fi
 
