@@ -87,6 +87,18 @@ emacs_value make_string(emacs_env *env, const char *str)
 }
 
 /**
+ * Check if `value` is a string.
+ */
+bool is_string(emacs_env *env, emacs_value value)
+{
+    emacs_value string, type;
+
+    string = env->intern(env, "string");
+    type = env->type_of(env, value);
+    return env->eq(env, type, string);
+}
+
+/**
  * Extract an integer from `value`.
  */
 intmax_t extract_integer(emacs_env *env, emacs_value value)
@@ -100,4 +112,16 @@ intmax_t extract_integer(emacs_env *env, emacs_value value)
 emacs_value make_integer(emacs_env *env, intmax_t value)
 {
     return env->make_integer(env, value);
+}
+
+/**
+ * Check if `value` is an integer.
+ */
+bool is_integer(emacs_env *env, emacs_value value)
+{
+    emacs_value integer, type;
+
+    integer = env->intern(env, "integer");
+    type = env->type_of(env, value);
+    return env->eq(env, type, integer);
 }
