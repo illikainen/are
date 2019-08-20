@@ -1,0 +1,21 @@
+#!/bin/sh
+
+set -o errexit
+set -o nounset
+
+if [ $# -ne 3 ]; then
+    echo "usage: $0 <emacs> <asan> <el>"
+    exit 1
+fi
+
+EMACS="$1"
+ASAN="$2"
+EL="$3"
+
+# XXX: is there a way to find the absolute path with autotools?
+if [ "$ASAN" = "yes" ]; then
+    libasan=$(echo "/usr/lib/$(uname -m)-linux-gnu/libasan.so".[0-9])
+    export LD_PRELOAD="$libasan"
+fi
+
+"$EMACS" --quick --batch --load "$EL" -f ert-run-tests-batch-and-exit
