@@ -23,43 +23,36 @@ struct string *extract_string(emacs_env *env, emacs_value value)
     ptrdiff_t size;
 
     if (!is_string(env, value)) {
-        non_local_exit_signal(env, "Invalid type");
         return NULL;
     }
 
     len = extract_integer(env, funcall(env, "length", 1, value));
     if (len < 0) {
-        non_local_exit_signal(env, "invalid string");
         return NULL;
     }
 
     if (__builtin_add_overflow(len, 1, &size)) {
-        non_local_exit_signal(env, "overflow detected");
         return NULL;
     }
 
     s = calloc(1, sizeof(*s));
     if (s == NULL) {
-        non_local_exit_signal(env, "oom");
         return NULL;
     }
     s->len = len;
 
     if (__builtin_mul_overflow(size, 1, &s->size)) {
         free(s);
-        non_local_exit_signal(env, "overflow detected");
         return NULL;
     }
 
     s->str = malloc(s->size);
     if (s->str == NULL) {
-        non_local_exit_signal(env, "oom");
         free_string(s);
         return NULL;
     }
 
     if (!env->copy_string_contents(env, value, s->str, &size)) {
-        non_local_exit_signal(env, "copy_string_contents() failed");
         free_string(s);
         return NULL;
     }
