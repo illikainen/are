@@ -42,6 +42,137 @@ static struct are_engine *are_find_engine(emacs_env *env)
     return engine;
 }
 
+static emacs_value are_re_search_forward(emacs_env *env, ptrdiff_t nargs,
+                                         emacs_value args[], void *data)
+{
+    struct are_engine *engine;
+    struct string *regexp = NULL;
+    struct string *str = NULL;
+    enum are_noerror noerror = ARE_NOERROR_NIL;
+    intmax_t bound;
+    intmax_t count = 1;
+    intmax_t point = extract_integer(env, funcall(env, "point", 0));
+    intmax_t point_min = extract_integer(env, funcall(env, "point-min", 0));
+    emacs_value mark;
+    emacs_value rv = env->intern(env, "nil");
+
+    (void)data;
+
+    if (nargs < 1) {
+        goto out;
+    }
+
+    /*
+     * This isn't great -- the entire buffer is extracted for the search :(
+     */
+    str = extract_string(env, funcall(env, "buffer-string", 0));
+    if (str == NULL) {
+        non_local_exit_signal(env, "Invalid buffer");
+        goto out;
+    }
+
+    /*
+     * 1st arg: `regexp`.
+     */
+    regexp = extract_string(env, args[0]);
+    if (regexp == NULL) {
+        non_local_exit_signal(env, "Invalid regexp");
+        goto out;
+    }
+
+    /*
+     * 4th arg: `count` (needed for `bound`).
+     */
+    if (nargs > 3 && is_integer(env, args[3])) {
+        count = extract_integer(env, args[3]);
+    }
+
+    /*
+     * 2nd: `bound.
+     */
+    if (nargs > 1 && is_integer(env, args[1])) {
+        bound = extract_integer(env, args[1]);
+    } else {
+        if (count > 0) {
+            if (__builtin_mul_overflow(str->size, 1, &bound)) {
+                non_local_exit_signal(env, "Invalid bound");
+                goto out;
+            }
+        } else {
+            bound = point_min;
+        }
+    }
+
+    /*
+     * 3rd arg: `noerror`.
+     */
+    if (nargs > 2) {
+        if (env->eq(env, args[2], env->intern(env, "nil"))) {
+            noerror = ARE_NOERROR_NIL;
+        } else if (env->eq(env, args[2], env->intern(env, "t"))) {
+            noerror = ARE_NOERROR_T;
+        } else {
+            noerror = ARE_NOERROR_OTHER;
+        }
+    }
+
+    /*
+     * If `count` is >0, `re-search-forward` searches forward and `bound`
+     * has to be >`point`.
+     *
+     * If `count` is <0, `re-search-forward` searches backward and `bound`
+     * has to be <`point`.
+     *
+     * If `count` is 0, the bound is checked and a signal is raised if it's
+     * >`point`.  However, no search is performed; instead the start and end
+     * markers of the match data are simply set to `point` and `point` is
+     * returned.  I'm not sure why, but that's how `re-search-forward` seems
+     * to handle a count of 0.
+     */
+    if ((count > 0 && bound < point) || (count <= 0 && bound > point)) {
+        non_local_exit_signal(env, "Invalid bound");
+        goto out;
+    }
+
+    if (count == 0) {
+        mark = funcall(env, "make-marker", 0);
+        funcall(env, "set-marker", 2, mark, make_integer(env, point));
+        funcall(env, "set-match-data", 1, funcall(env, "list", 2, mark, mark));
+        rv = make_integer(env, point);
+        goto out;
+    }
+
+    /*
+     * At this point, `bound` may be negative if `count` is also negative.
+     * This is permissible by `re-search-forward` with a negative `count`,
+     * so long as `bound` <= `point`.  Naturally, we can't search before the
+     * first position in the buffer so `bound` is adjusted here.
+     */
+    if (bound < point_min) {
+        bound = point_min;
+    }
+
+    /*
+     * And finally dispatch!
+     */
+    engine = are_find_engine(env);
+    if (engine == NULL || engine->re_search_forward == NULL) {
+        non_local_exit_signal(env, "Invalid engine");
+        goto out;
+    }
+
+    debug("regexp: '%s', str: '%s', bound: %d, noerror: %d, count: %d",
+          regexp->str, str->str, bound, noerror, count);
+    rv = engine->re_search_forward(env, regexp, str, bound, noerror, count);
+
+out:
+    free_string(regexp);
+    free_string(str);
+    return rv;
+}
+module_register_fun(are_re_search_forward, "are-re-search-forward", 1, 4,
+                    "ARE version of `re-search-forward'.");
+
 static emacs_value are_string_match(emacs_env *env, ptrdiff_t nargs,
                                     emacs_value args[], void *data)
 {
