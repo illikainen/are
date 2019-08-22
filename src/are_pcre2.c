@@ -82,7 +82,7 @@ static int are_pcre2_set_match_data(emacs_env *env, PCRE2_SIZE *ovector,
     emacs_value list;
     size_t i, nmemb;
 
-    if (count == 0 || __builtin_mul_overflow(count, 2, &nmemb)) {
+    if (count == 0 || mul_overflow(count, 2, &nmemb)) {
         return -1;
     }
 

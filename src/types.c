@@ -117,7 +117,7 @@ emacs_value str_make(emacs_env *env, const char *str)
 {
     ptrdiff_t len;
 
-    if (str && !__builtin_mul_overflow(strlen(str), 1, &len)) {
+    if (str && !mul_overflow(strlen(str), 1, &len)) {
         return env->make_string(env, str, len);
     }
     return env->intern(env, "nil");
@@ -170,7 +170,7 @@ emacs_value size_make(emacs_env *env, size_t value)
 {
     intmax_t i;
 
-    if (__builtin_mul_overflow(value, 1, &i)) {
+    if (mul_overflow(value, 1, &i)) {
         return env->intern(env, "nil");
     }
     return intmax_make(env, i);

@@ -10,6 +10,7 @@
 #include <emacs-module.h>
 
 #define mul_overflow(a, b, res) __builtin_mul_overflow((a), (b), (res))
+#define add_overflow(a, b, res) __builtin_add_overflow((a), (b), (res))
 
 struct str {
     char *str;

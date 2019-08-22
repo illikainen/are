@@ -19,7 +19,7 @@ emacs_value apply(emacs_env *env, const char *fun, size_t nargs,
     emacs_value funsym;
     ptrdiff_t pnargs;
 
-    if (!__builtin_mul_overflow(nargs, 1, &pnargs)) {
+    if (!mul_overflow(nargs, 1, &pnargs)) {
         funsym = env->intern(env, fun);
         if (env->is_not_nil(env, funsym)) {
             return env->funcall(env, funsym, pnargs, args);
@@ -41,7 +41,7 @@ emacs_value funcall(emacs_env *env, const char *fun, size_t nargs, ...)
     emacs_value rv = env->intern(env, "nil");
 
     if (nargs > 0) {
-        if (__builtin_mul_overflow(nargs, sizeof(*args), &size)) {
+        if (mul_overflow(nargs, sizeof(*args), &size)) {
             return rv;
         }
 
@@ -158,7 +158,7 @@ vmsprintf(char **strp, const char *fmt, va_list ap)
     len = vsnprintf(NULL, 0, fmt, tmp);
     va_end(tmp);
 
-    if (len >= 0 && !__builtin_add_overflow(len, 1, &size)) {
+    if (len >= 0 && !add_overflow(len, 1, &size)) {
         *strp = malloc(size);
         if (*strp) {
             rv = vsnprintf(*strp, size, fmt, ap);
