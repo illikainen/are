@@ -21,11 +21,11 @@ enum are_noerror {
 
 struct are_engine {
     char name[16];
-    emacs_value (*re_search_forward)(emacs_env *env, struct string *regexp,
-                                     struct string *str, intmax_t bound,
+    emacs_value (*re_search_forward)(emacs_env *env, struct str *regexp,
+                                     struct str *str, intmax_t bound,
                                      enum are_noerror noerror, intmax_t count);
-    emacs_value (*string_match)(emacs_env *env, struct string *regexp,
-                                struct string *str, size_t start);
+    emacs_value (*string_match)(emacs_env *env, struct str *regexp,
+                                struct str *str, size_t start);
     UT_hash_handle hh;
 };
 

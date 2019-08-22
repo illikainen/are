@@ -25,9 +25,9 @@ static bool is_cont(char c)
  * should be used instead of `strlen()`.  The struct must be freed with
  * `str_free()` after use.
  */
-struct string *str_extract(emacs_env *env, emacs_value value)
+struct str *str_extract(emacs_env *env, emacs_value value)
 {
-    struct string *s;
+    struct str *s;
     ptrdiff_t size;
 
     if (!str_p(env, value)) {
@@ -58,9 +58,9 @@ struct string *str_extract(emacs_env *env, emacs_value value)
 /**
  * Allocate a string large enough for `size`.
  */
-struct string *str_alloc(ptrdiff_t size)
+struct str *str_alloc(ptrdiff_t size)
 {
-    struct string *s;
+    struct str *s;
     size_t usize;
 
     if (mul_overflow(size, 1, &usize)) {
@@ -84,7 +84,7 @@ struct string *str_alloc(ptrdiff_t size)
 /**
  * Free memory for string `s`.
  */
-void str_free(struct string *s)
+void str_free(struct str *s)
 {
     if (s) {
         free(s->str);
@@ -95,7 +95,7 @@ void str_free(struct string *s)
 /**
  * Retrieve the length for string `s`.
  */
-size_t str_length(struct string *s)
+size_t str_length(struct str *s)
 {
     size_t i;
     size_t len = 0;

@@ -17,7 +17,7 @@ static struct are_engine *engines = NULL;
 static struct are_engine *are_find_engine(emacs_env *env)
 {
     struct are_engine *engine = NULL;
-    struct string *name = NULL;
+    struct str *name = NULL;
     emacs_value value;
 
     value = value_of(env, "are-engine");
@@ -46,8 +46,8 @@ static emacs_value are_re_search_forward(emacs_env *env, ptrdiff_t nargs,
                                          emacs_value args[], void *data)
 {
     struct are_engine *engine;
-    struct string *regexp = NULL;
-    struct string *str = NULL;
+    struct str *regexp = NULL;
+    struct str *str = NULL;
     enum are_noerror noerror = ARE_NOERROR_NIL;
     intmax_t bound;
     intmax_t count = 1;
@@ -177,8 +177,8 @@ static emacs_value are_string_match(emacs_env *env, ptrdiff_t nargs,
                                     emacs_value args[], void *data)
 {
     struct are_engine *engine;
-    struct string *regexp = NULL;
-    struct string *str = NULL;
+    struct str *regexp = NULL;
+    struct str *str = NULL;
     size_t start = 0;
     emacs_value rv = env->intern(env, "nil");
 

@@ -109,8 +109,8 @@ static int are_pcre2_set_match_data(emacs_env *env, PCRE2_SIZE *ovector,
 /*
  * PCRE2 variant of `string-match`.
  */
-static emacs_value are_pcre2_string_match(emacs_env *env, struct string *regexp,
-                                          struct string *str, size_t start)
+static emacs_value are_pcre2_string_match(emacs_env *env, struct str *regexp,
+                                          struct str *str, size_t start)
 {
     PCRE2_UCHAR error[512];
     PCRE2_SIZE *ovector;
