@@ -230,7 +230,7 @@ out:
     return rv;
 }
 module_register_fun(are_string_match, "are-string-match", 1, 4,
-                    "ARE version of `re-search-forward'.");
+                    "ARE version of `string-match'.");
 
 /*
  * Add an engine.
