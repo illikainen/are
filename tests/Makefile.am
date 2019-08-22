@@ -8,3 +8,9 @@ AM_EL_LOG_FLAGS += "yes"
 else
 AM_EL_LOG_FLAGS += "no"
 endif
+
+if UBSAN
+AM_EL_LOG_FLAGS += "yes"
+else
+AM_EL_LOG_FLAGS += "no"
+endif

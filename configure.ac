@@ -74,11 +74,25 @@ if test "$enable_asan" = "yes"; then
 fi
 AM_CONDITIONAL([ASAN], [test "$enable_asan" = "yes"])
 
+# Add --enable-ubsan.
+#
+# TODO: enable `implicit-conversion` and `nullability` on newer clang.
+AC_ARG_ENABLE(ubsan, AS_HELP_STRING([--enable-ubsan], [enable UBSan]))
+if test "$enable_ubsan" = "yes"; then
+    CFLAGS="$CFLAGS -fsanitize=undefined"
+    CFLAGS="$CFLAGS -fsanitize=float-divide-by-zero"
+    CFLAGS="$CFLAGS -fsanitize=unsigned-integer-overflow"
+    CFLAGS="$CFLAGS -fno-omit-frame-pointer"
+
+fi
+AM_CONDITIONAL([UBSAN], [test "$enable_ubsan" = "yes"])
+
 cat <<EOF
 
     Build options
     =============
     Enable ASan: ${enable_asan:-no}
+    Enable UBSan: ${enable_ubsan:-no}
     Enable PCRE2: ${enable_pcre2:-no}
 
 EOF

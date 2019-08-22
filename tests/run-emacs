@@ -3,19 +3,25 @@
 set -o errexit
 set -o nounset
 
-if [ $# -ne 3 ]; then
-    echo "usage: $0 <emacs> <asan> <el>"
+if [ $# -ne 4 ]; then
+    echo "usage: $0 <emacs> <asan> <ubsan> <el>"
     exit 1
 fi
 
 EMACS="$1"
 ASAN="$2"
-EL="$3"
+UBSAN="$3"
+EL="$4"
 
 # XXX: is there a way to find the absolute path with autotools?
 if [ "$ASAN" = "yes" ]; then
     libasan=$(echo "/usr/lib/$(uname -m)-linux-gnu/libasan.so".[0-9])
-    export LD_PRELOAD="$libasan"
+    export LD_PRELOAD="${LD_PRELOAD:-} $libasan"
+fi
+if [ "$UBSAN" = "yes" ]; then
+    libubsan=$(echo "/usr/lib/$(uname -m)-linux-gnu/libubsan.so".[0-9])
+    export UBSAN_OPTIONS=print_stacktrace=1
+    export LD_PRELOAD="${LD_PRELOAD:-} $libubsan"
 fi
 
 "$EMACS" --quick --batch --load "$EL" -f ert-run-tests-batch-and-exit
