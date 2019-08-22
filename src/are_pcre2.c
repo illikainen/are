@@ -75,35 +75,59 @@ static uint32_t are_pcre2_parse_options(emacs_env *env, const char *name)
 /*
  * Expose `match-data` to emacs.
  */
-static int are_pcre2_set_match_data(emacs_env *env, PCRE2_SIZE *ovector,
-                                    uint32_t count)
+static int are_pcre2_set_match_data(emacs_env *env, struct str *str,
+                                    PCRE2_SIZE *ovector, uint32_t count,
+                                    bool markerp)
 {
-    emacs_value *data;
+    size_t i, nmemb, pos;
     emacs_value list;
-    size_t i, nmemb;
+    emacs_value mark;
+    emacs_value *data = NULL;
+    int rv = -1;
 
     if (count == 0 || mul_overflow(count, 2, &nmemb)) {
-        return -1;
+        goto out;
     }
 
     data = calloc(nmemb, sizeof(*data));
     if (data == NULL) {
-        return -1;
+        goto out;
     }
 
     for (i = 0; i < nmemb; i++) {
-        data[i] = size_make(env, ovector[i]);
+        if (markerp) {
+            mark = funcall(env, "make-marker", 0);
+            if (!env->is_not_nil(env, mark)) {
+                goto out;
+            }
+
+            /* buffer positions start at 1 */
+            pos = str_position(str, ovector[i]);
+            if (add_overflow(pos, 1, &pos)) {
+                goto out;
+            }
+
+            data[i] = funcall(env, "set-marker", 2, mark, size_make(env, pos));
+            if (!env->is_not_nil(env, data[i])) {
+                goto out;
+            }
+        } else {
+            pos = str_position(str, ovector[i]);
+            data[i] = size_make(env, pos);
+        }
     }
 
     list = apply(env, "list", nmemb, data);
     if (!env->is_not_nil(env, list)) {
-        free(data);
-        return -1;
+        goto out;
     }
 
     funcall(env, "set-match-data", 1, list);
+    rv = 0;
+
+out:
     free(data);
-    return 0;
+    return rv;
 }
 
 /*
@@ -155,7 +179,7 @@ static emacs_value are_pcre2_string_match(emacs_env *env, struct str *regexp,
         goto out;
     }
 
-    if (are_pcre2_set_match_data(env, ovector, count) != 0) {
+    if (are_pcre2_set_match_data(env, str, ovector, count, false) != 0) {
         non_local_exit_signal(env, "Unable to set match data");
         goto out;
     }
