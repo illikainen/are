@@ -107,7 +107,41 @@ size_t str_length(const struct str *s)
             }
         }
     }
+
     return len;
+}
+
+/**
+ * Return the UTF-8 position for the character at byte `idx`.
+ */
+size_t str_position(const struct str *s, size_t idx)
+{
+    size_t i;
+    size_t pos = 0;
+
+    if (s && s->str && idx < s->size) {
+        for (i = 0; i < idx; i++) {
+            if (!is_cont(s->str[i])) {
+                pos++;
+            }
+        }
+    }
+    return pos;
+}
+
+/**
+ * Return the previous UTF-8 position relative to `cur`.
+ */
+size_t str_position_prev(const struct str *s, size_t cur)
+{
+    if (s && s->str && cur && cur <= s->size) {
+        while (--cur) {
+            if (!is_cont(s->str[cur])) {
+                break;
+            }
+        }
+    }
+    return cur;
 }
 
 /**

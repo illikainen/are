@@ -19,6 +19,8 @@ struct str {
 
 struct str *str_extract(emacs_env *env, emacs_value value);
 size_t str_length(const struct str *s);
+size_t str_position(const struct str *s, size_t idx);
+size_t str_position_prev(const struct str *s, size_t cur);
 struct str *str_alloc(ptrdiff_t size);
 void str_free(struct str *s);
 emacs_value str_make(emacs_env *env, const char *str);
