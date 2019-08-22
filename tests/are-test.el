@@ -32,31 +32,36 @@
 (defmacro are-test-regexp (str groups &rest alists)
   "Compare the result of the sexps in ALIST."
   (declare (indent defun))
-  `(let (emacs-result result)
+  `(let ((str ,str)
+         emacs-result result)
+     (when are-debug
+       (message "\n"))
      (dolist (elt ',alists)
+       (when are-debug
+         (message "Running: %S" elt))
        (save-excursion
          (save-match-data
            (condition-case err
                (let ((are-engine (car elt)))
-                 (push (eval (cdr elt)) result)
+                 (push (eval (cdr elt) `((str . ,str))) result)
                  (push (point) result)
                  (push (match-data) result)
                  (dotimes (i (1+ ,groups))
-                   (push (match-string i ,str) result)
-                   (push (match-string-no-properties i ,str) result)
+                   (push (match-string i str) result)
+                   (push (match-string-no-properties i str) result)
                    (push (match-beginning i) result)
                    (push (match-end i) result)))
              (error
               (push 'error result)
               (when are-debug
-                (message "\nError: %S %S" (car elt) err))))))
+                (message "Error: %S: %S" elt err))))))
        (cond ((eq (car elt) 'emacs)
               (setq emacs-result result)
               (setq result nil))
              (t
               (when are-debug
-                (message "\nEmacs result: %S" emacs-result)
-                (message "\nOther result: %S" result))
+                (message "Emacs result: %S" emacs-result)
+                (message "Other result: %S" result))
               (should (equal result emacs-result)))))))
 
 (defun are-test-ucs-code (name)
@@ -454,39 +459,106 @@
 
 (ert-deftest are-test-string-match ()
   "Test for `are-string-match'."
-  (let ((strings
-         '("" "m00" "abcd efgh\nijkl 0123"))
-        (engine-patterns
-         '(((:engine emacs :regexp "" :start nil)
-            (:engine pcre2 :regexp "" :start nil))
-           ((:engine emacs :regexp "\\([0-9]\\)\\([0-9]\\)" :start 0)
-            (:engine pcre2 :regexp "([0-9])([0-9])" :start 0))
-           ((:engine emacs :regexp "[0-9]\\'" :start nil)
-            (:engine pcre2 :regexp "[0-9]$" :start nil))
-           ((:engine emacs :regexp "[0-9]+\\'" :start 0)
-            (:engine pcre2 :regexp "[0-9]+$" :start 0))
-           ((:engine emacs :regexp "^[a-z]+" :start nil)
-            (:engine pcre2 :regexp "^[a-z]+" :start nil))
-           ((:engine emacs :regexp "\\`ijkl" :start nil)
-            (:engine pcre2 :regexp "^ijkl" :start nil))
-           ((:engine pcre2 :regexp ".*" :start 1000 :error t))))
-        idx match-data are-engine engine regexp start error)
-    (dolist (str strings)
-      (dolist (ep engine-patterns)
-        (dolist (plist ep)
-          (setq engine (plist-get plist :engine)
-                regexp (plist-get plist :regexp)
-                start (plist-get plist :start)
-                error (plist-get plist :error))
-          (cond ((eq engine 'emacs)
-                 (setq idx (string-match regexp str start)
-                       match-data (match-data)))
-                (t
-                 (setq are-engine engine)
-                 (if error
-                     (should-error (are-string-match regexp str start))
-                   (should (equal (are-string-match regexp str start) idx))
-                   (should (equal (match-data) match-data))))))))))
+  (let ((are-compile-options '(pcre2-multiline pcre2-utf))
+        (case-fold-search nil)
+        (str (concat
+              "abcd efgh ijkl 01234\n"
+              "ABCD EFGH 987\n"
+              "FOO 1\n"
+              (are-test-ucs-str
+               "PIE" "PINEAPPLE" "CINEMA" "BICYCLE" "SHIP" "METRO" "CAT"
+               "SMALL AIRPLANE" "BED" "HAPPY PERSON RAISING ONE HAND"
+               "CAT" "CAT FACE" "CAT FACE WITH TEARS OF JOY" "CAT"
+               "COPYLEFT SYMBOL" "CYCLONE" "FOGGY" "CLOSED UMBRELLA"
+               "DIGIT ZERO FULL STOP" "DIGIT ZERO COMMA"
+               "DIGIT ONE COMMA" "DIGIT TWO COMMA" "DIGIT THREE COMMA"
+               "DIGIT FOUR COMMA" "DIGIT FIVE COMMA" "DIGIT SIX COMMA"
+               "DIGIT SEVEN COMMA" "DIGIT EIGHT COMMA"
+               "DIGIT NINE COMMA")
+              "\n"
+              (are-test-ucs-str
+               "PIE" "PINEAPPLE" "CINEMA" "CAT" "CAT FACE" "BED" "PIE")
+              "\n"
+              "foo bar Baz qUX 111 222 321\n")))
+    (are-test-regexp str 0
+      (emacs . (string-match "\\`[a-z]+" str))
+      (pcre2 . (are-string-match "^[a-z]+" str)))
+
+    (are-test-regexp str 0
+      (emacs . (string-match "[a-z]+" str 6))
+      (pcre2 . (are-string-match "[a-z]+" str 6)))
+
+    (are-test-regexp str 0
+      (emacs . (string-match ".*" str 1000))
+      (pcre2 . (are-string-match ".*" str 1000)))
+
+    (are-test-regexp str 0
+      (emacs . (string-match ".*" str -1000))
+      (pcre2 . (are-string-match ".*" str -1000)))
+
+    (are-test-regexp str 1
+      (emacs . (string-match "\\([0-9]\\)" str))
+      (pcre2 . (are-string-match "([0-9])" str)))
+
+    (are-test-regexp str 1
+      (emacs . (string-match "\\([0-9]+\\)$" str))
+      (pcre2 . (are-string-match "([0-9]+)$" str)))
+
+    (are-test-regexp str 2
+      (emacs . (string-match "\\([0-9]\\)\\([0-9]\\)" str))
+      (pcre2 . (are-string-match "([0-9])([0-9])" str)))
+
+    (are-test-regexp str 2
+      (emacs . (string-match "\\([A-Z]+\\).*\\([0-9]+\\)" str))
+      (pcre2 . (are-string-match "([A-Z]+).*([0-9]+)" str)))
+
+    (are-test-regexp str 1
+      (emacs . (string-match "\\(.*\\)" str))
+      (pcre2 . (are-string-match "(.*)" str)))
+
+    (are-test-regexp str 0
+      (emacs . (string-match (are-test-ucs-str "PIE") str))
+      (pcre2 . (are-string-match (are-test-ucs-str "PIE") str)))
+
+    (are-test-regexp str 0
+      (emacs . (string-match (are-test-ucs-str "PIE") str 20))
+      (pcre2 . (are-string-match (are-test-ucs-str "PIE") str 20)))
+
+     (are-test-regexp str 0
+       (emacs . (string-match
+                 (concat (are-test-ucs-str "PIE" "PINEAPPLE")
+                         "."
+                         (are-test-ucs-str "CAT"))
+                 str))
+       (pcre2 . (are-string-match
+                 (concat (are-test-ucs-str "PIE" "PINEAPPLE")
+                         "."
+                         (are-test-ucs-str "CAT"))
+                 str)))
+
+     (are-test-regexp str 3
+       (emacs . (string-match
+                 (concat "\\(" (are-test-ucs-str "CAT") "\\)"
+                         "\\(.*\\)"
+                         "\\(" (are-test-ucs-str "CAT") "\\)")
+                 str))
+       (pcre2 . (are-string-match
+                 (concat "(" (are-test-ucs-str "CAT") ")"
+                         "(.*)"
+                         "(" (are-test-ucs-str "CAT") ")")
+                         str)))
+
+    (are-test-regexp str 0
+      (emacs . (string-match "" str))
+      (pcre2 . (are-string-match "" str)))
+
+    (are-test-regexp "" 0
+      (emacs . (string-match ".*" ""))
+      (pcre2 . (are-string-match ".*" "")))
+
+    (are-test-regexp "" 0
+      (emacs . (string-match "" ""))
+      (pcre2 . (are-string-match "" "")))))
 
 (provide 'are-test)
 
