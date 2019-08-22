@@ -88,7 +88,7 @@ void make_function(emacs_env *env, const char *name, fun *fun,
 
     def = env->make_function(env, min_arity, max_arity, fun, docstring, data);
     funcall(env, "defalias", 3, env->intern(env, name), def,
-            make_string(env, docstring));
+            str_make(env, docstring));
 }
 
 /*
@@ -104,9 +104,9 @@ void non_local_exit_signal(emacs_env *env, const char *fmt, ...)
 
     va_start(ap, fmt);
     if (vmsprintf(&str, fmt, ap) > 0) {
-        msg = make_string(env, str);
+        msg = str_make(env, str);
     } else {
-        msg = make_string(env, "unknown error");
+        msg = str_make(env, "unknown error");
     }
     va_end(ap);
 

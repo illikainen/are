@@ -31,13 +31,13 @@ static struct are_engine *are_find_engine(emacs_env *env)
         return NULL;
     }
 
-    name = extract_string(env, value);
+    name = str_extract(env, value);
     if (name == NULL) {
         return NULL;
     }
 
     HASH_FIND_STR(engines, name->str, engine);
-    free_string(name);
+    str_free(name);
 
     return engine;
 }
@@ -51,8 +51,8 @@ static emacs_value are_re_search_forward(emacs_env *env, ptrdiff_t nargs,
     enum are_noerror noerror = ARE_NOERROR_NIL;
     intmax_t bound;
     intmax_t count = 1;
-    intmax_t point = extract_integer(env, funcall(env, "point", 0));
-    intmax_t point_min = extract_integer(env, funcall(env, "point-min", 0));
+    intmax_t point = intmax_extract(env, funcall(env, "point", 0));
+    intmax_t point_min = intmax_extract(env, funcall(env, "point-min", 0));
     emacs_value mark;
     emacs_value rv = env->intern(env, "nil");
 
@@ -65,7 +65,7 @@ static emacs_value are_re_search_forward(emacs_env *env, ptrdiff_t nargs,
     /*
      * This isn't great -- the entire buffer is extracted for the search :(
      */
-    str = extract_string(env, funcall(env, "buffer-string", 0));
+    str = str_extract(env, funcall(env, "buffer-string", 0));
     if (str == NULL) {
         non_local_exit_signal(env, "Invalid buffer");
         goto out;
@@ -74,7 +74,7 @@ static emacs_value are_re_search_forward(emacs_env *env, ptrdiff_t nargs,
     /*
      * 1st arg: `regexp`.
      */
-    regexp = extract_string(env, args[0]);
+    regexp = str_extract(env, args[0]);
     if (regexp == NULL) {
         non_local_exit_signal(env, "Invalid regexp");
         goto out;
@@ -83,15 +83,15 @@ static emacs_value are_re_search_forward(emacs_env *env, ptrdiff_t nargs,
     /*
      * 4th arg: `count` (needed for `bound`).
      */
-    if (nargs > 3 && is_integer(env, args[3])) {
-        count = extract_integer(env, args[3]);
+    if (nargs > 3 && intmax_p(env, args[3])) {
+        count = intmax_extract(env, args[3]);
     }
 
     /*
      * 2nd: `bound.
      */
-    if (nargs > 1 && is_integer(env, args[1])) {
-        bound = extract_integer(env, args[1]);
+    if (nargs > 1 && intmax_p(env, args[1])) {
+        bound = intmax_extract(env, args[1]);
     } else {
         if (count > 0) {
             if (__builtin_mul_overflow(str->size, 1, &bound)) {
@@ -136,9 +136,9 @@ static emacs_value are_re_search_forward(emacs_env *env, ptrdiff_t nargs,
 
     if (count == 0) {
         mark = funcall(env, "make-marker", 0);
-        funcall(env, "set-marker", 2, mark, make_integer(env, point));
+        funcall(env, "set-marker", 2, mark, intmax_make(env, point));
         funcall(env, "set-match-data", 1, funcall(env, "list", 2, mark, mark));
-        rv = make_integer(env, point);
+        rv = intmax_make(env, point);
         goto out;
     }
 
@@ -166,8 +166,8 @@ static emacs_value are_re_search_forward(emacs_env *env, ptrdiff_t nargs,
     rv = engine->re_search_forward(env, regexp, str, bound, noerror, count);
 
 out:
-    free_string(regexp);
-    free_string(str);
+    str_free(regexp);
+    str_free(str);
     return rv;
 }
 module_register_fun(are_re_search_forward, "are-re-search-forward", 1, 4,
@@ -188,20 +188,20 @@ static emacs_value are_string_match(emacs_env *env, ptrdiff_t nargs,
         goto out;
     }
 
-    regexp = extract_string(env, args[0]);
+    regexp = str_extract(env, args[0]);
     if (regexp == NULL) {
         non_local_exit_signal(env, "Invalid regexp");
         goto out;
     }
 
-    str = extract_string(env, args[1]);
+    str = str_extract(env, args[1]);
     if (str == NULL) {
         non_local_exit_signal(env, "Invalid string");
         goto out;
     }
 
-    if (nargs > 2 && is_integer(env, args[2])) {
-        if (__builtin_mul_overflow(extract_integer(env, args[2]), 1, &start) ||
+    if (nargs > 2 && intmax_p(env, args[2])) {
+        if (__builtin_mul_overflow(intmax_extract(env, args[2]), 1, &start) ||
             start > str->len) {
             non_local_exit_signal(env, "Invalid start position");
             goto out;
@@ -218,8 +218,8 @@ static emacs_value are_string_match(emacs_env *env, ptrdiff_t nargs,
     rv = engine->string_match(env, regexp, str, start);
 
 out:
-    free_string(regexp);
-    free_string(str);
+    str_free(regexp);
+    str_free(str);
     return rv;
 }
 module_register_fun(are_string_match, "are-string-match", 1, 4,

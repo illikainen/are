@@ -16,17 +16,17 @@
  * The string may contain NUL-bytes, so the `len` field in the struct should
  * be used instead of strlen().  The struct must be freed after use.
  */
-struct string *extract_string(emacs_env *env, emacs_value value)
+struct string *str_extract(emacs_env *env, emacs_value value)
 {
     struct string *s;
     intmax_t len;
     ptrdiff_t size;
 
-    if (!is_string(env, value)) {
+    if (!str_p(env, value)) {
         return NULL;
     }
 
-    len = extract_integer(env, funcall(env, "length", 1, value));
+    len = intmax_extract(env, funcall(env, "length", 1, value));
     if (len < 0) {
         return NULL;
     }
@@ -48,12 +48,12 @@ struct string *extract_string(emacs_env *env, emacs_value value)
 
     s->str = malloc(s->size);
     if (s->str == NULL) {
-        free_string(s);
+        str_free(s);
         return NULL;
     }
 
     if (!env->copy_string_contents(env, value, s->str, &size)) {
-        free_string(s);
+        str_free(s);
         return NULL;
     }
 
@@ -63,7 +63,7 @@ struct string *extract_string(emacs_env *env, emacs_value value)
 /**
  * Free memory for string `s`.
  */
-void free_string(struct string *s)
+void str_free(struct string *s)
 {
     if (s) {
         free(s->str);
@@ -74,7 +74,7 @@ void free_string(struct string *s)
 /**
  * Convert a NUL-terminated string to an emacs value.
  */
-emacs_value make_string(emacs_env *env, const char *str)
+emacs_value str_make(emacs_env *env, const char *str)
 {
     ptrdiff_t len;
 
@@ -87,7 +87,7 @@ emacs_value make_string(emacs_env *env, const char *str)
 /**
  * Check if `value` is a string.
  */
-bool is_string(emacs_env *env, emacs_value value)
+bool str_p(emacs_env *env, emacs_value value)
 {
     emacs_value string, type;
 
@@ -99,7 +99,7 @@ bool is_string(emacs_env *env, emacs_value value)
 /**
  * Extract an integer from `value`.
  */
-intmax_t extract_integer(emacs_env *env, emacs_value value)
+intmax_t intmax_extract(emacs_env *env, emacs_value value)
 {
     return env->extract_integer(env, value);
 }
@@ -107,7 +107,7 @@ intmax_t extract_integer(emacs_env *env, emacs_value value)
 /**
  * Create an emacs value from integer `value`.
  */
-emacs_value make_integer(emacs_env *env, intmax_t value)
+emacs_value intmax_make(emacs_env *env, intmax_t value)
 {
     return env->make_integer(env, value);
 }
@@ -115,7 +115,7 @@ emacs_value make_integer(emacs_env *env, intmax_t value)
 /**
  * Check if `value` is an integer.
  */
-bool is_integer(emacs_env *env, emacs_value value)
+bool intmax_p(emacs_env *env, emacs_value value)
 {
     emacs_value integer, type;
 
@@ -127,12 +127,12 @@ bool is_integer(emacs_env *env, emacs_value value)
 /*
  * Create an emacs value from size_t `value`.
  */
-emacs_value make_size(emacs_env *env, size_t value)
+emacs_value size_make(emacs_env *env, size_t value)
 {
     intmax_t i;
 
     if (__builtin_mul_overflow(value, 1, &i)) {
         return env->intern(env, "nil");
     }
-    return make_integer(env, i);
+    return intmax_make(env, i);
 }

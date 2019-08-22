@@ -15,15 +15,15 @@ struct string {
     size_t size;
 };
 
-struct string *extract_string(emacs_env *env, emacs_value value);
-void free_string(struct string *s);
-emacs_value make_string(emacs_env *env, const char *str);
-bool is_string(emacs_env *env, emacs_value value);
+struct string *str_extract(emacs_env *env, emacs_value value);
+void str_free(struct string *s);
+emacs_value str_make(emacs_env *env, const char *str);
+bool str_p(emacs_env *env, emacs_value value);
 
-intmax_t extract_integer(emacs_env *env, emacs_value value);
-emacs_value make_integer(emacs_env *env, intmax_t value);
-bool is_integer(emacs_env *env, emacs_value value);
+intmax_t intmax_extract(emacs_env *env, emacs_value value);
+emacs_value intmax_make(emacs_env *env, intmax_t value);
+bool intmax_p(emacs_env *env, emacs_value value);
 
-emacs_value make_size(emacs_env *env, size_t value);
+emacs_value size_make(emacs_env *env, size_t value);
 
 #endif

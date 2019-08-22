@@ -31,7 +31,7 @@ void log_debug(emacs_env *env, const char *func, const char *fmt, ...)
     va_end(ap);
 
     if (msprintf(&str, "%s: %s", func, ustr) >= 0) {
-        funcall(env, "message", 1, make_string(env, str));
+        funcall(env, "message", 1, str_make(env, str));
     }
 
     free(ustr);

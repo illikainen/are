@@ -92,7 +92,7 @@ static int are_pcre2_set_match_data(emacs_env *env, PCRE2_SIZE *ovector,
     }
 
     for (i = 0; i < nmemb; i++) {
-        data[i] = make_size(env, ovector[i]);
+        data[i] = size_make(env, ovector[i]);
     }
 
     list = apply(env, "list", nmemb, data);
@@ -160,7 +160,7 @@ static emacs_value are_pcre2_string_match(emacs_env *env, struct string *regexp,
         goto out;
     }
 
-    rv = make_size(env, ovector[0]);
+    rv = size_make(env, ovector[0]);
 
 out:
     pcre2_match_data_free(match_data);
