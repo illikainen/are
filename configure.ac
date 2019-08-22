@@ -66,7 +66,7 @@ if test "$enable_debug" = "yes"; then
 fi
 
 # Add --enable-asan.
-AC_ARG_ENABLE(asan, AS_HELP_STRING([--enable-asan], [enable ASAN]))
+AC_ARG_ENABLE(asan, AS_HELP_STRING([--enable-asan], [enable ASan]))
 if test "$enable_asan" = "yes"; then
     CFLAGS="$CFLAGS -fsanitize=address"
     CFLAGS="$CFLAGS -fno-omit-frame-pointer"
@@ -78,7 +78,7 @@ cat <<EOF
 
     Build options
     =============
-    Enable ASAN: ${enable_asan:-no}
+    Enable ASan: ${enable_asan:-no}
     Enable PCRE2: ${enable_pcre2:-no}
 
 EOF
