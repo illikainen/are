@@ -95,7 +95,7 @@ void str_free(struct str *s)
 /**
  * Retrieve the length for string `s`.
  */
-size_t str_length(struct str *s)
+size_t str_length(const struct str *s)
 {
     size_t i;
     size_t len = 0;
