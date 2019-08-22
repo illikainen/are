@@ -123,8 +123,8 @@ static emacs_value are_pcre2_string_match(emacs_env *env, struct string *regexp,
     emacs_value rv = env->intern(env, "nil");
 
     opts = are_pcre2_parse_options(env, "are-compile-options");
-    re = pcre2_compile((PCRE2_SPTR)regexp->str, regexp->len, opts, &rc, &offset,
-                       NULL);
+    re = pcre2_compile((PCRE2_SPTR)regexp->str, str_length(regexp), opts, &rc,
+                       &offset, NULL);
     if (re == NULL) {
         pcre2_get_error_message(rc, error, sizeof(error));
         non_local_exit_signal(env, "Compile: %lu: %s", offset, error);
@@ -138,7 +138,7 @@ static emacs_value are_pcre2_string_match(emacs_env *env, struct string *regexp,
     }
 
     opts = are_pcre2_parse_options(env, "are-match-options");
-    rc = pcre2_match(re, (PCRE2_SPTR)str->str, str->len, start, opts,
+    rc = pcre2_match(re, (PCRE2_SPTR)str->str, str_length(str), start, opts,
                      match_data, NULL);
     if (rc < 0) {
         if (rc != PCRE2_ERROR_NOMATCH) {

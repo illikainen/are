@@ -11,44 +11,39 @@
 #include "utils.h"
 
 /**
+ * Return true if `c` is a continuation of a UTF-8 multibyte sequence.
+ */
+static bool is_cont(char c)
+{
+    return (c & 0xc0) == 0x80;
+}
+
+/**
  * Extract a string from `value`.
  *
- * The string may contain NUL-bytes, so the `len` field in the struct should
- * be used instead of strlen().  The struct must be freed after use.
+ * The string may contain multibyte and NUL characters, so `str_length()`
+ * should be used instead of `strlen()`.  The struct must be freed with
+ * `str_free()` after use.
  */
 struct string *str_extract(emacs_env *env, emacs_value value)
 {
     struct string *s;
-    intmax_t len;
     ptrdiff_t size;
 
     if (!str_p(env, value)) {
         return NULL;
     }
 
-    len = intmax_extract(env, funcall(env, "length", 1, value));
-    if (len < 0) {
+    /*
+     * Determine buffer size.  See:
+     * - E.8.3 Conversion Between Lisp and Module Values
+     */
+    if (!env->copy_string_contents(env, value, NULL, &size)) {
         return NULL;
     }
 
-    if (__builtin_add_overflow(len, 1, &size)) {
-        return NULL;
-    }
-
-    s = calloc(1, sizeof(*s));
+    s = str_alloc(size);
     if (s == NULL) {
-        return NULL;
-    }
-
-    if (__builtin_mul_overflow(len, 1, &s->len) ||
-        __builtin_mul_overflow(size, 1, &s->size)) {
-        free(s);
-        return NULL;
-    }
-
-    s->str = malloc(s->size);
-    if (s->str == NULL) {
-        str_free(s);
         return NULL;
     }
 
@@ -61,6 +56,32 @@ struct string *str_extract(emacs_env *env, emacs_value value)
 }
 
 /**
+ * Allocate a string large enough for `size`.
+ */
+struct string *str_alloc(ptrdiff_t size)
+{
+    struct string *s;
+    size_t usize;
+
+    if (mul_overflow(size, 1, &usize)) {
+        return NULL;
+    }
+
+    s = malloc(sizeof(*s));
+    if (s == NULL) {
+        return NULL;
+    }
+
+    s->str = malloc(usize);
+    if (s->str == NULL) {
+        free(s);
+        return NULL;
+    }
+    s->size = usize;
+    return s;
+}
+
+/**
  * Free memory for string `s`.
  */
 void str_free(struct string *s)
@@ -69,6 +90,24 @@ void str_free(struct string *s)
         free(s->str);
         free(s);
     }
+}
+
+/**
+ * Retrieve the length for string `s`.
+ */
+size_t str_length(struct string *s)
+{
+    size_t i;
+    size_t len = 0;
+
+    if (s && s->str && s->size) {
+        for (i = 0; i < s->size - 1; i++) {
+            if (!is_cont(s->str[i])) {
+                len++;
+            }
+        }
+    }
+    return len;
 }
 
 /**

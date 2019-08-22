@@ -202,7 +202,7 @@ static emacs_value are_string_match(emacs_env *env, ptrdiff_t nargs,
 
     if (nargs > 2 && intmax_p(env, args[2])) {
         if (__builtin_mul_overflow(intmax_extract(env, args[2]), 1, &start) ||
-            start > str->len) {
+            start > str_length(str)) {
             non_local_exit_signal(env, "Invalid start position");
             goto out;
         }

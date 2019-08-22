@@ -9,13 +9,16 @@
 
 #include <emacs-module.h>
 
+#define mul_overflow(a, b, res) __builtin_mul_overflow((a), (b), (res))
+
 struct string {
     char *str;
-    size_t len;
     size_t size;
 };
 
 struct string *str_extract(emacs_env *env, emacs_value value);
+size_t str_length(struct string *s);
+struct string *str_alloc(ptrdiff_t size);
 void str_free(struct string *s);
 emacs_value str_make(emacs_env *env, const char *str);
 bool str_p(emacs_env *env, emacs_value value);
