@@ -49,6 +49,7 @@ static emacs_value are_re_search_forward(emacs_env *env, ptrdiff_t nargs,
     struct str *regexp = NULL;
     struct str *str = NULL;
     enum are_noerror noerror = ARE_NOERROR_NIL;
+    size_t ubound;
     intmax_t bound;
     intmax_t count = 1;
     intmax_t point = intmax_extract(env, funcall(env, "point", 0));
@@ -146,10 +147,16 @@ static emacs_value are_re_search_forward(emacs_env *env, ptrdiff_t nargs,
      * At this point, `bound` may be negative if `count` is also negative.
      * This is permissible by `re-search-forward` with a negative `count`,
      * so long as `bound` <= `point`.  Naturally, we can't search before the
-     * first position in the buffer so `bound` is adjusted here.
+     * first position in the buffer so `bound` is adjusted and converted to
+     * unsigned here.
      */
     if (bound < point_min) {
         bound = point_min;
+    }
+
+    if (mul_overflow(bound, 1, &ubound)) {
+        non_local_exit_signal(env, "Invalid bound: %ld", bound);
+        goto out;
     }
 
     /*
@@ -162,8 +169,8 @@ static emacs_value are_re_search_forward(emacs_env *env, ptrdiff_t nargs,
     }
 
     debug("regexp: '%s', str: '%s', bound: %d, noerror: %d, count: %d",
-          regexp->str, str->str, bound, noerror, count);
-    rv = engine->re_search_forward(env, regexp, str, bound, noerror, count);
+          regexp->str, str->str, ubound, noerror, count);
+    rv = engine->re_search_forward(env, regexp, str, ubound, noerror, count);
 
 out:
     str_free(regexp);

@@ -22,7 +22,7 @@ enum are_noerror {
 struct are_engine {
     char name[16];
     emacs_value (*re_search_forward)(emacs_env *env, struct str *regexp,
-                                     struct str *str, intmax_t bound,
+                                     struct str *str, size_t bound,
                                      enum are_noerror noerror, intmax_t count);
     emacs_value (*string_match)(emacs_env *env, struct str *regexp,
                                 struct str *str, size_t start);
