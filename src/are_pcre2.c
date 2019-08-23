@@ -54,13 +54,12 @@ static const struct are_pcre2_option are_pcre2_options[] = {
 /*
  * Parse PCRE2 options from `name`.
  */
-static uint32_t are_pcre2_parse_options(emacs_env *env, const char *name)
+static uint32_t are_pcre2_parse_options(emacs_env *env, emacs_value optlist)
 {
     const struct are_pcre2_option *p;
-    emacs_value optlist, memq;
+    emacs_value memq;
     uint32_t opts = 0;
 
-    optlist = value_of(env, name);
     if (env->is_not_nil(env, optlist)) {
         for (p = are_pcre2_options; p->name; p++) {
             memq = funcall(env, "memq", 2, env->intern(env, p->name), optlist);
@@ -86,7 +85,7 @@ static void *are_pcre2_compile(emacs_env *env, struct str *regexp,
 
     (void)options;
 
-    opts = are_pcre2_parse_options(env, "are-compile-options");
+    opts = are_pcre2_parse_options(env, options);
     re = pcre2_compile((PCRE2_SPTR)regexp->str, regexp->size - 1, opts, &rc,
                        &offset, NULL);
     if (re == NULL) {
@@ -124,7 +123,7 @@ static emacs_value are_pcre2_match(emacs_env *env, void *ptr, struct str *str,
         goto out;
     }
 
-    opts = are_pcre2_parse_options(env, "are-match-options");
+    opts = are_pcre2_parse_options(env, options);
     rc = pcre2_match(re, (PCRE2_SPTR)str->str, str->size - 1, 0, opts,
                      match_data, NULL);
     if (rc < 0) {

@@ -80,8 +80,7 @@
 
 (ert-deftest are-test-pcre2-re-search-forward ()
   "Test `are-re-search-forward'."
-  (let ((are-compile-options '(pcre2-multiline pcre2-utf))
-        (case-fold-search nil))
+  (let ((case-fold-search nil))
     (with-temp-buffer
       (insert (concat
                "abcd efgh ijkl 01234\n"
@@ -459,8 +458,7 @@
 
 (ert-deftest are-test-string-match ()
   "Test for `are-string-match'."
-  (let ((are-compile-options '(pcre2-multiline pcre2-utf))
-        (case-fold-search nil)
+  (let ((case-fold-search nil)
         (str (concat
               "abcd efgh ijkl 01234\n"
               "ABCD EFGH 987\n"
@@ -563,7 +561,7 @@
 
 (ert-deftest are-test-engine ()
   "Tests for `are-engine'."
-  (should (equal (are-engine (are-compile "[a-z]" 0 'pcre2)) 'pcre2)))
+  (should (equal (are-engine (are-compile "[a-z]" nil 'pcre2)) 'pcre2)))
 
 (provide 'are-test)
 
