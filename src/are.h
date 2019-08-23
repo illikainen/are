@@ -15,7 +15,14 @@
 
 struct are_engine {
     char name[16];
+    void *(*compile)(emacs_env *env, struct str *regexp, emacs_value options);
+    void (*free)(void *ptr);
     UT_hash_handle hh;
+};
+
+struct are_regexp {
+    const struct are_engine *engine;
+    void *ptr;
 };
 
 #define are_register_engine(engine)                                            \
