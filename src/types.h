@@ -26,6 +26,10 @@ void str_free(struct str *s);
 emacs_value str_make(emacs_env *env, const char *str);
 bool str_p(emacs_env *env, emacs_value value);
 
+void *ptr_extract(emacs_env *env, emacs_value value);
+emacs_value ptr_make(emacs_env *env, void *ptr, void (*free)(void *ptr));
+bool ptr_p(emacs_env *env, emacs_value value);
+
 intmax_t intmax_extract(emacs_env *env, emacs_value value);
 emacs_value intmax_make(emacs_env *env, intmax_t value);
 bool intmax_p(emacs_env *env, emacs_value value);

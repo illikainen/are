@@ -170,6 +170,37 @@ bool str_p(emacs_env *env, emacs_value value)
 }
 
 /**
+ * Extract a user pointer from `value`.
+ */
+void *ptr_extract(emacs_env *env, emacs_value value)
+{
+    if (!ptr_p(env, value)) {
+        return NULL;
+    }
+    return env->get_user_ptr(env, value);
+}
+
+/**
+ * Create a user pointer.
+ */
+emacs_value ptr_make(emacs_env *env, void *ptr, void (*free)(void *ptr))
+{
+    return env->make_user_ptr(env, free, ptr);
+}
+
+/**
+ * Check if `value` is a user pointer.
+ */
+bool ptr_p(emacs_env *env, emacs_value value)
+{
+    emacs_value user_ptr, type;
+
+    user_ptr = env->intern(env, "user-ptr");
+    type = env->type_of(env, value);
+    return env->eq(env, type, user_ptr);
+}
+
+/**
  * Extract an integer from `value`.
  */
 intmax_t intmax_extract(emacs_env *env, emacs_value value)
