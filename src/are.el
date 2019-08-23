@@ -48,6 +48,11 @@
   "Load `are-library'."
   (load are-library))
 
+
+(defun are-engine (regexp)
+  "Return engine for a compiled REGEXP."
+  (are--engine regexp))
+
 (provide 'are)
 
 ;;; are.el ends here

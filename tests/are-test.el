@@ -560,6 +560,11 @@
       (emacs . (string-match "" ""))
       (pcre2 . (are-string-match "" "")))))
 
+
+(ert-deftest are-test-engine ()
+  "Tests for `are-engine'."
+  (should (equal (are-engine (are-compile "[a-z]" 0 'pcre2)) 'pcre2)))
+
 (provide 'are-test)
 
 ;;; are-test.el ends here

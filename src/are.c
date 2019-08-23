@@ -167,6 +167,31 @@ out:
 module_register_fun(are_match, "are--match", 3, 3, "Match a string.");
 
 /*
+ * Retrieve the engine for a compiled expression.
+ */
+static emacs_value are_engine(emacs_env *env, ptrdiff_t nargs,
+                              emacs_value args[], void *data)
+{
+    struct are_regexp *re;
+    emacs_value nil = env->intern(env, "nil");
+
+    (void)data;
+
+    if (nargs != 1) {
+        return nil;
+    }
+
+    re = ptr_extract(env, args[0]);
+    if (re == NULL || re->engine == NULL || re->engine->name == NULL) {
+        non_local_exit_signal(env, "Invalid compiled regexp");
+        return nil;
+    }
+
+    return env->intern(env, re->engine->name);
+}
+module_register_fun(are_engine, "are--engine", 1, 1, "Retrieve engine.");
+
+/*
  * Add an engine.
  */
 void are_add_engine(struct are_engine *engine)
