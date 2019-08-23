@@ -66,6 +66,33 @@
   "Return engine for a compiled REGEXP."
   (are--engine regexp))
 
+(defun are--adjust-match-data (mdata &optional start)
+  "Add START to each element in MDATA"
+  (mapcar (lambda (elt)
+            (+ elt (or start 0)))
+          mdata))
+
+(defun are--set-match-data (mdata &optional use-markers)
+  "Set MDATA as match data.
+
+If USE-MARKERS is non-nil, a marker is created for each element
+in MDATA."
+  (set-match-data (mapcar (lambda (elt)
+                            (if use-markers
+                                (set-marker (make-marker) elt)
+                              elt))
+                          mdata)))
+
+(defun are-string-match (regexp string &optional start)
+  "Search for REGEXP in STRING, starting at START.
+
+See `string-match'."
+  (let* ((re (are-compile regexp))
+         (str (substring string start))
+         (mdata (are--adjust-match-data (are-match re str) start)))
+    (are--set-match-data mdata)
+    (car mdata)))
+
 (provide 'are)
 
 ;;; are.el ends here
