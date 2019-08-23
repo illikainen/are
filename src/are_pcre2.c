@@ -102,8 +102,67 @@ static void are_pcre2_free(void *ptr)
     pcre2_code_free(ptr);
 }
 
+static emacs_value are_pcre2_match(emacs_env *env, void *ptr, struct str *str,
+                                   emacs_value options)
+{
+    PCRE2_UCHAR error[512];
+    PCRE2_SIZE *ovector;
+    int rc;
+    uint32_t i;
+    uint32_t count;
+    uint32_t opts = 0;
+    pcre2_code *re = ptr;
+    pcre2_match_data *match_data = NULL;
+    emacs_value *matches = NULL;
+    emacs_value rv = env->intern(env, "nil");
+
+    (void)options;
+
+    match_data = pcre2_match_data_create_from_pattern(re, NULL);
+    if (match_data == NULL) {
+        non_local_exit_signal(env, "Cannot create match data");
+        goto out;
+    }
+
+    opts = are_pcre2_parse_options(env, "are-match-options");
+    rc = pcre2_match(re, (PCRE2_SPTR)str->str, str->size - 1, 0, opts,
+                     match_data, NULL);
+    if (rc < 0) {
+        if (rc != PCRE2_ERROR_NOMATCH) {
+            pcre2_get_error_message(rc, error, sizeof(error));
+            non_local_exit_signal(env, "Match error: %s", error);
+        }
+        goto out;
+    }
+
+    ovector = pcre2_get_ovector_pointer(match_data);
+    count = pcre2_get_ovector_count(match_data);
+    if (ovector == NULL || count == 0 || mul_overflow(count, 2, &count)) {
+        non_local_exit_signal(env, "Invalid ovector");
+        goto out;
+    }
+
+    matches = calloc(count, sizeof(*matches));
+    if (matches == NULL) {
+        non_local_exit_signal(env, "Too many matches");
+        goto out;
+    }
+
+    for (i = 0; i < count; i++) {
+        matches[i] = size_make(env, str_position(str, ovector[i]));
+    }
+
+    rv = apply(env, "list", count, matches);
+
+out:
+    free(matches);
+    pcre2_match_data_free(match_data);
+    return rv;
+}
+
 static struct are_engine pcre2 = {
     .compile = are_pcre2_compile,
     .free = are_pcre2_free,
+    .match = are_pcre2_match,
 };
 are_register_engine(pcre2);
