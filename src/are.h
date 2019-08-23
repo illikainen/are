@@ -13,19 +13,8 @@
 
 #include "types.h"
 
-enum are_noerror {
-    ARE_NOERROR_NIL,
-    ARE_NOERROR_T,
-    ARE_NOERROR_OTHER,
-};
-
 struct are_engine {
     char name[16];
-    emacs_value (*re_search_forward)(emacs_env *env, struct str *regexp,
-                                     struct str *str, size_t bound,
-                                     enum are_noerror noerror, intmax_t count);
-    emacs_value (*string_match)(emacs_env *env, struct str *regexp,
-                                struct str *str, size_t start);
     UT_hash_handle hh;
 };
 
