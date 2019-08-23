@@ -119,6 +119,48 @@ out:
 }
 module_register_fun(are_compile, "are--compile", 3, 3, "Compile a regexp.");
 
+static emacs_value are_match(emacs_env *env, ptrdiff_t nargs,
+                             emacs_value args[], void *data)
+{
+    emacs_value options;
+    struct are_regexp *re;
+    struct str *str = NULL;
+    emacs_value rv = env->intern(env, "nil");
+
+    (void)data;
+
+    if (nargs != 3) {
+        non_local_exit_signal(env, "Invalid number of arguments");
+        goto out;
+    }
+
+    re = ptr_extract(env, args[0]);
+    if (re == NULL) {
+        non_local_exit_signal(env, "Invalid compiled regexp");
+        goto out;
+    }
+
+    if (re->engine == NULL || re->engine->match == NULL) {
+        non_local_exit_signal(env, "Invalid engine");
+        goto out;
+    }
+
+    str = str_extract(env, args[1]);
+    if (str == NULL) {
+        non_local_exit_signal(env, "Invalid string");
+        goto out;
+    }
+
+    options = args[2];
+
+    rv = re->engine->match(env, re->ptr, str, options);
+
+out:
+    str_free(str);
+    return rv;
+}
+module_register_fun(are_match, "are--match", 3, 3, "Match a string.");
+
 /*
  * Add an engine.
  */

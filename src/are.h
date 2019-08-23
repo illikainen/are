@@ -17,6 +17,8 @@ struct are_engine {
     char name[16];
     void *(*compile)(emacs_env *env, struct str *regexp, emacs_value options);
     void (*free)(void *ptr);
+    emacs_value (*match)(emacs_env *env, void *ptr, struct str *str,
+                         emacs_value options);
     UT_hash_handle hh;
 };
 
