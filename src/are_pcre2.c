@@ -71,3 +71,39 @@ static uint32_t are_pcre2_parse_options(emacs_env *env, const char *name)
     }
     return opts;
 }
+
+/*
+ * Compile a PCRE2 pattern.
+ */
+static void *are_pcre2_compile(emacs_env *env, struct str *regexp,
+                               emacs_value options)
+{
+    PCRE2_UCHAR error[512];
+    PCRE2_SIZE offset;
+    pcre2_code *re;
+    uint32_t opts;
+    int rc;
+
+    (void)options;
+
+    opts = are_pcre2_parse_options(env, "are-compile-options");
+    re = pcre2_compile((PCRE2_SPTR)regexp->str, regexp->size - 1, opts, &rc,
+                       &offset, NULL);
+    if (re == NULL) {
+        pcre2_get_error_message(rc, error, sizeof(error));
+        non_local_exit_signal(env, "Compile: %lu: %s", offset, error);
+        return NULL;
+    }
+    return re;
+}
+
+static void are_pcre2_free(void *ptr)
+{
+    pcre2_code_free(ptr);
+}
+
+static struct are_engine pcre2 = {
+    .compile = are_pcre2_compile,
+    .free = are_pcre2_free,
+};
+are_register_engine(pcre2);
