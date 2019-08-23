@@ -85,7 +85,7 @@ static emacs_value are_compile(emacs_env *env, ptrdiff_t nargs,
 
     (void)data;
 
-    if (nargs < 3) {
+    if (nargs != 3) {
         non_local_exit_signal(env, "Invalid number of arguments");
     }
 
