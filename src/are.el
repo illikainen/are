@@ -56,6 +56,12 @@
          (options (or options (alist-get engine are-compile-options))))
     (are--compile regexp options engine)))
 
+(defun are-match (regexp str &optional options)
+  "Match STR with REGEXP and OPTIONS."
+  (let* ((engine (are-engine regexp))
+         (options (alist-get engine are-match-options)))
+    (are--match regexp str options)))
+
 (defun are-engine (regexp)
   "Return engine for a compiled REGEXP."
   (are--engine regexp))
