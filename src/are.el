@@ -50,6 +50,12 @@
   (load are-library))
 
 
+(defun are-compile (regexp &optional options engine)
+  "Compile REGEXP with OPTIONS for ENGINE."
+  (let* ((engine (or engine are-engine))
+         (options (or options (alist-get engine are-compile-options))))
+    (are--compile regexp options engine)))
+
 (defun are-engine (regexp)
   "Return engine for a compiled REGEXP."
   (are--engine regexp))
