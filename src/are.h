@@ -9,17 +9,17 @@
 
 #include <stdio.h>
 
-#include <uthash.h>
+#include <utlist.h>
 
 #include "types.h"
 
 struct are_engine {
-    char name[16];
+    const char *name;
     void *(*compile)(emacs_env *env, struct str *regexp, emacs_value options);
     void (*free)(void *ptr);
     emacs_value (*match)(emacs_env *env, void *ptr, struct str *str,
                          emacs_value options);
-    UT_hash_handle hh;
+    struct are_engine *next;
 };
 
 struct are_regexp {
@@ -30,15 +30,7 @@ struct are_regexp {
 #define are_register_engine(engine)                                            \
     static void __attribute__((constructor)) are_register_##engine(void)       \
     {                                                                          \
-        /*                                                                     \
-         * This is kind of ugly, but uthash provides two ways of adding string \
-         * keys: HASH_ADD_KEYPTR and HASH_ADD_STR.                             \
-         *                                                                     \
-         * HASH_ADD_KEYPTR casts away the const qualifier.  While nothing      \
-         * seems to modify the memory it points to, it still seems somewhat    \
-         * fragile to rely on it never being modified.                         \
-         */                                                                    \
-        snprintf(engine.name, sizeof(engine.name), "%s", #engine);             \
+        engine.name = #engine;                                                 \
         are_add_engine(&engine);                                               \
     }
 

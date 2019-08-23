@@ -4,7 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include <emacs-module.h>
 
@@ -12,7 +13,7 @@
 #include "log.h"
 #include "module.h"
 
-static struct are_engine *engines = NULL;
+static struct are_engine *are_engines_head = NULL;
 
 /*
  * Find an engine based on `value`.
@@ -32,9 +33,13 @@ static struct are_engine *are_find_engine(emacs_env *env, emacs_value value)
         return NULL;
     }
 
-    HASH_FIND_STR(engines, name->str, engine);
-    str_free(name);
+    LL_FOREACH (are_engines_head, engine) {
+        if (engine->name && !strcmp(engine->name, name->str)) {
+            break;
+        }
+    }
 
+    str_free(name);
     return engine;
 }
 
@@ -166,5 +171,5 @@ module_register_fun(are_match, "are--match", 3, 3, "Match a string.");
  */
 void are_add_engine(struct are_engine *engine)
 {
-    HASH_ADD_STR(engines, name, engine);
+    LL_APPEND(are_engines_head, engine);
 }
