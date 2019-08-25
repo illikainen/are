@@ -9,6 +9,8 @@
 ;; This package exposes additional regexp engines to Emacs.
 
 ;;; Code:
+(require 'cl-lib)
+
 (defgroup are nil
   "Additional Regexp Engines"
   :group 'are
@@ -91,11 +93,18 @@ in MDATA."
   "Search for REGEXP in STRING, starting at START.
 
 See `string-match'."
-  (let* ((re (are-compile regexp))
-         (str (substring string start))
-         (mdata (are--adjust-match-data (are-match re str) start)))
-    (are--set-match-data mdata)
-    (car mdata)))
+  (condition-case err
+      (let* ((re (are-compile regexp))
+             (str (substring string start))
+             (mdata (are--adjust-match-data (are-match re str)
+                                            (if (and start (cl-minusp start))
+                                                (+ (length string) start)
+                                              start))))
+        (are--set-match-data (or mdata '(0 0)))
+        (car mdata))
+    (args-out-of-range
+     ;; For compatibility with `string-match'.
+     (signal (car err) (list (cadr err) (caddr err))))))
 
 (defun are-re-search-forward (regexp &optional bound noerror count)
   "Search forward from `point' for REGEXP.
