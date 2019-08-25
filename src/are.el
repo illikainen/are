@@ -10,6 +10,7 @@
 
 ;;; Code:
 (require 'cl-lib)
+(require 'libare)
 
 (defgroup are nil
   "Additional Regexp Engines"
@@ -36,20 +37,6 @@
   "Whether to show debug messages"
   :group 'are
   :type 'boolean)
-
-(defcustom are-library
-  (concat (file-name-as-directory
-           (directory-file-name
-            (file-name-directory
-             (or load-file-name buffer-file-name))))
-          "libare")
-  "Shared library."
-  :group 'are
-  :type 'string)
-
-(defun are-load ()
-  "Load `are-library'."
-  (load are-library))
 
 (defun are-compile (regexp &optional options engine)
   "Compile REGEXP with OPTIONS for ENGINE."

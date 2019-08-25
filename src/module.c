@@ -8,6 +8,7 @@
 #include <utlist.h>
 
 #include "module.h"
+#include "types.h"
 #include "utils.h"
 
 int plugin_is_GPL_compatible;
@@ -30,6 +31,9 @@ int emacs_module_init(struct emacs_runtime *ert)
         make_function(env, m->name, m->fun, m->min_arity, m->max_arity,
                       m->docstring, m->data);
     }
+
+    /* allow the module to be require()d */
+    funcall(env, "provide", 1, env->intern(env, "libare"));
 
     return 0;
 }

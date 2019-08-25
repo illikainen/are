@@ -19,19 +19,17 @@
           (file-name-as-directory "src"))
   "Source directory.")
 
-(defvar are-library
-  (concat are-src-dir
-          (file-name-as-directory ".libs")
-          "libare")
-  "Shared library file.")
+(defvar are-lib-dir
+  (concat are-src-dir ".libs")
+  "Library directory.")
 
 (defvar are-test-count 0
   "Test counter.")
 
+(add-to-list 'load-path are-lib-dir)
 (add-to-list 'load-path are-src-dir)
 
 (require 'are)
-(are-load)
 
 (defun are-test-regexps (elts &optional str)
   "Compare the result of the sexps in ELTS."
