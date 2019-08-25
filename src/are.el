@@ -189,6 +189,11 @@ See `re-search-forward'."
     (when (zerop count)
       mdata)))
 
+(defun are--debug (fmt &rest args)
+  "Print a debug message."
+  (when are-debug
+    (apply #'message fmt args)))
+
 (provide 'are)
 
 ;;; are.el ends here
