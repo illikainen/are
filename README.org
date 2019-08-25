@@ -1,0 +1,40 @@
+* Additional Regexp Engines (for Emacs)
+
+~are~ is a dynamic module for Emacs that implements support for
+additional regular expression engines.  ~PCRE2~ is currently the only
+supported engine, but it should be easy to add more engines (see
+~src/are_pcre2.c~ for a starting point).
+
+The idea is to reimplement commonly used Emacs functions for working
+with regular expressions in a compatible manner.  This should allow
+users to override regexp functions through the use of ~advice~ or
+~let-bindings~.
+
+
+** Status
+
+These functions have been implemented:
+
+| Emacs              | ARE                    |
+|--------------------+------------------------|
+| re-search-backward | are-re-search-backward |
+| re-search-forward  | are-re-search-forward  |
+| string-match       | are-string-match       |
+
+
+** Installation
+
+To install the required dependencies on a Debian-based system:
+
+#+begin_src sh
+$ sudo apt-get install automake libtool uthash-dev libpcre2-dev
+#+end_src
+
+And to install ~are~ in ~$HOME/.emacs.d/are~:
+
+#+begin_src sh
+$ ./autogen
+$ ./configure --prefix="$HOME/.emacs.d/are"
+$ make
+$ make install
+#+end_src
