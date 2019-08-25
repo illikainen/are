@@ -158,6 +158,12 @@ See `re-search-forward'."
            (goto-char start)))))
     pt))
 
+(defun are-re-search-backward (regexp &optional bound noerror count)
+  "Search backward from `point' for REGEXP.
+
+See `re-search-backward'."
+  (are-re-search-forward regexp bound noerror (- (or count 1))))
+
 (defun are--re-search-forward (re str offset count)
   "Do a forward search with `are-re-search-forward'."
   (let ((start 0)

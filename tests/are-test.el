@@ -119,8 +119,8 @@
     "")
   "Test strings.")
 
-(ert-deftest are-test-pcre2-re-search-forward ()
-  "Tests for `are-re-search-forward'."
+(ert-deftest are-test-pcre2-re-search ()
+  "Tests for `are-re-search-forward' and `are-re-search-backward'."
   (let ((case-fold-search nil))
     (dolist (str are-test-strings)
       (dolist (regexp are-test-regexps)
@@ -153,6 +153,18 @@
                                  ,noerror
                                  ,count))
                        (pcre2 . (are-re-search-forward
+                                 ,(alist-get 'pcre2 regexp)
+                                 ,bound
+                                 ,noerror
+                                 ,count))))
+
+                    (are-test-regexps
+                     `((emacs . (re-search-backward
+                                 ,(alist-get 'emacs regexp)
+                                 ,bound
+                                 ,noerror
+                                 ,count))
+                       (pcre2 . (are-re-search-backward
                                  ,(alist-get 'pcre2 regexp)
                                  ,bound
                                  ,noerror
