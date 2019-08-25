@@ -51,7 +51,6 @@
   "Load `are-library'."
   (load are-library))
 
-
 (defun are-compile (regexp &optional options engine)
   "Compile REGEXP with OPTIONS for ENGINE."
   (let* ((engine (or engine are-engine))
@@ -134,9 +133,9 @@ See `re-search-forward'."
                      (point))))
          (str (buffer-substring start end))
          (pt (cond ((> cnt 0)
-                    (cadr (are--re-search-forward-forward re str start cnt)))
+                    (cadr (are--re-search-forward re str start cnt)))
                    ((< cnt 0)
-                    (car (are--re-search-forward-backward re str start cnt)))
+                    (car (are--re-search-backward re str start cnt)))
                    ((eq cnt 0)
                     ;; If COUNT is 0, `re-search-forward' validates the bound
                     ;; and signals if it's invalid.  However, no actual search
@@ -159,7 +158,7 @@ See `re-search-forward'."
            (goto-char start)))))
     pt))
 
-(defun are--re-search-forward-forward (re str offset count)
+(defun are--re-search-forward (re str offset count)
   "Do a forward search with `are-re-search-forward'."
   (let ((start 0)
         mdata)
@@ -173,7 +172,7 @@ See `re-search-forward'."
         (are--set-match-data mdata t)))
     mdata))
 
-(defun are--re-search-forward-backward (re str offset count)
+(defun are--re-search-backward (re str offset count)
   "Do a backward search with `are-re-search-forward'."
   (let* ((start (length str))
          (end start)
