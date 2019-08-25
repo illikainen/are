@@ -189,6 +189,11 @@
   "Tests for `are-engine'."
   (should (equal (are-engine (are-compile "[a-z]" nil 'pcre2)) 'pcre2)))
 
+(ert-deftest are-test-compile ()
+  "Tests for `are-compile'."
+  (should (eq (type-of (are-compile ".*")) 'user-ptr))
+  (should-error (are-compile "(") :type 'invalid-regexp))
+
 (provide 'are-test)
 
 ;;; are-test.el ends here

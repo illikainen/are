@@ -21,7 +21,8 @@ emacs_value funcall(emacs_env *env, const char *fun, size_t nargs, ...);
 emacs_value apply(emacs_env *env, const char *fun, size_t nargs,
                   emacs_value args[]);
 emacs_value value_of(emacs_env *env, const char *name);
-void non_local_exit_signal(emacs_env *env, const char *fmt, ...);
+void non_local_exit_signal(emacs_env *env, const char *symbol, const char *fmt,
+                           ...);
 int msprintf(char **strp, const char *fmt, ...);
 int vmsprintf(char **strp, const char *fmt, va_list ap);
 

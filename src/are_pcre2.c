@@ -90,7 +90,7 @@ static void *are_pcre2_compile(emacs_env *env, struct str *regexp,
                        &offset, NULL);
     if (re == NULL) {
         pcre2_get_error_message(rc, error, sizeof(error));
-        non_local_exit_signal(env, "Compile: %lu: %s", offset, error);
+        non_local_exit_signal(env, "invalid-regexp", "%s", error);
         return NULL;
     }
     return re;
@@ -119,7 +119,7 @@ static emacs_value are_pcre2_match(emacs_env *env, void *ptr, struct str *str,
 
     match_data = pcre2_match_data_create_from_pattern(re, NULL);
     if (match_data == NULL) {
-        non_local_exit_signal(env, "Cannot create match data");
+        non_local_exit_signal(env, "error", "Cannot create match data");
         goto out;
     }
 
@@ -129,7 +129,7 @@ static emacs_value are_pcre2_match(emacs_env *env, void *ptr, struct str *str,
     if (rc < 0) {
         if (rc != PCRE2_ERROR_NOMATCH) {
             pcre2_get_error_message(rc, error, sizeof(error));
-            non_local_exit_signal(env, "Match error: %s", error);
+            non_local_exit_signal(env, "error", "Match error: %s", error);
         }
         goto out;
     }
@@ -137,13 +137,13 @@ static emacs_value are_pcre2_match(emacs_env *env, void *ptr, struct str *str,
     ovector = pcre2_get_ovector_pointer(match_data);
     count = pcre2_get_ovector_count(match_data);
     if (ovector == NULL || count == 0 || mul_overflow(count, 2, &count)) {
-        non_local_exit_signal(env, "Invalid ovector");
+        non_local_exit_signal(env, "error", "Invalid ovector");
         goto out;
     }
 
     matches = calloc(count, sizeof(*matches));
     if (matches == NULL) {
-        non_local_exit_signal(env, "Too many matches");
+        non_local_exit_signal(env, "error", "Too many matches");
         goto out;
     }
 

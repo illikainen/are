@@ -91,12 +91,12 @@ static emacs_value are_compile(emacs_env *env, ptrdiff_t nargs,
     (void)data;
 
     if (nargs != 3) {
-        non_local_exit_signal(env, "Invalid number of arguments");
+        non_local_exit_signal(env, "error", "Invalid number of arguments");
     }
 
     regexp = str_extract(env, args[0]);
     if (regexp == NULL) {
-        non_local_exit_signal(env, "Invalid regexp");
+        non_local_exit_signal(env, "error", "Invalid regexp");
         goto out;
     }
 
@@ -104,7 +104,7 @@ static emacs_value are_compile(emacs_env *env, ptrdiff_t nargs,
 
     engine = are_find_engine(env, args[2]);
     if (engine == NULL || engine->compile == NULL) {
-        non_local_exit_signal(env, "Invalid engine");
+        non_local_exit_signal(env, "error", "Invalid engine");
         goto out;
     }
 
@@ -112,7 +112,7 @@ static emacs_value are_compile(emacs_env *env, ptrdiff_t nargs,
     if (ptr) {
         re = are_alloc(engine, ptr);
         if (re == NULL) {
-            non_local_exit_signal(env, "OOM");
+            non_local_exit_signal(env, "error", "OOM");
             goto out;
         }
         rv = ptr_make(env, re, are_free);
@@ -135,24 +135,24 @@ static emacs_value are_match(emacs_env *env, ptrdiff_t nargs,
     (void)data;
 
     if (nargs != 3) {
-        non_local_exit_signal(env, "Invalid number of arguments");
+        non_local_exit_signal(env, "error", "Invalid number of arguments");
         goto out;
     }
 
     re = ptr_extract(env, args[0]);
     if (re == NULL) {
-        non_local_exit_signal(env, "Invalid compiled regexp");
+        non_local_exit_signal(env, "error", "Invalid compiled regexp");
         goto out;
     }
 
     if (re->engine == NULL || re->engine->match == NULL) {
-        non_local_exit_signal(env, "Invalid engine");
+        non_local_exit_signal(env, "error", "Invalid engine");
         goto out;
     }
 
     str = str_extract(env, args[1]);
     if (str == NULL) {
-        non_local_exit_signal(env, "Invalid string");
+        non_local_exit_signal(env, "error", "Invalid string");
         goto out;
     }
 
@@ -183,7 +183,7 @@ static emacs_value are_engine(emacs_env *env, ptrdiff_t nargs,
 
     re = ptr_extract(env, args[0]);
     if (re == NULL || re->engine == NULL || re->engine->name == NULL) {
-        non_local_exit_signal(env, "Invalid compiled regexp");
+        non_local_exit_signal(env, "error", "Invalid compiled regexp");
         return nil;
     }
 

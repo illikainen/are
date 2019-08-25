@@ -94,7 +94,8 @@ void make_function(emacs_env *env, const char *name, fun *fun,
 /*
  * Signal an error.
  */
-void non_local_exit_signal(emacs_env *env, const char *fmt, ...)
+void non_local_exit_signal(emacs_env *env, const char *symbol, const char *fmt,
+                           ...)
 {
     emacs_value list;
     emacs_value error;
@@ -110,7 +111,7 @@ void non_local_exit_signal(emacs_env *env, const char *fmt, ...)
     }
     va_end(ap);
 
-    error = env->intern(env, "error");
+    error = env->intern(env, symbol);
     list = funcall(env, "list", 1, msg);
     env->non_local_exit_signal(env, error, list);
 
