@@ -66,10 +66,14 @@
   "Return engine for a compiled REGEXP."
   (are--engine regexp))
 
-(defun are--adjust-match-data (mdata &optional start)
-  "Add START to each element in MDATA"
+(defun are--adjust-match-data (mdata &optional start absolute)
+  "Add START to each element in MDATA.
+
+If ABSOLUTE is non-nil, set each element to START instead."
   (mapcar (lambda (elt)
-            (+ elt (or start 0)))
+            (if absolute
+                (or start 0)
+              (+ elt (or start 0))))
           mdata))
 
 (defun are--set-match-data (mdata &optional use-markers)
@@ -108,73 +112,82 @@ See `re-search-forward'."
          (end (cond ((and (> cnt 0) (not bound))
                      (point-max))
                     ((and (<= cnt 0) (not bound))
-                     (point-max))
+                     (point))
                     ((and (> cnt 0) (< bound (point)))
-                     (signal 'args-out-of-range (list bound)))
+                     (error "Invalid search bound (wrong side of point)"))
                     ((and (<= cnt 0) (> bound (point)))
-                     (signal 'args-out-of-range (list bound)))
+                     (error "Invalid search bound (wrong side of point)"))
                     ((and (= cnt 0) (< bound (point-min)))
                      (point-min))
                     ((> cnt 0)
-                     (1- (+ (point) bound)))
+                     (min bound (point-max)))
                     ((<= cnt 0)
-                     (1- (point)))))
+                     (point))))
          (str (buffer-substring start end))
-         (pt (ignore-errors
-               (cond ((> cnt 0)
-                      (cadr (are--re-search-forward-forward re str cnt)))
-                     ((< cnt 0)
-                      (save-excursion
-                        (goto-char start)
-                        (car (are--re-search-forward-backward re str cnt))))
-                     ((eq cnt 0)
-                      ;; If COUNT is 0, `re-search-forward' validates the bound
-                      ;; and signals if it's invalid.  However, no actual
-                      ;; search seem to take place.  Instead, the start and end
-                      ;; positions of `match-data' is set to `point', and
-                      ;; `point' is returned..
-                      (set-match-data (list (set-marker (make-marker) (point))
-                                            (set-marker (make-marker) (point))))
-                      (point))
-                      ))))
+         (pt (cond ((> cnt 0)
+                    (cadr (are--re-search-forward-forward re str start cnt)))
+                   ((< cnt 0)
+                    (car (are--re-search-forward-backward re str start cnt)))
+                   ((eq cnt 0)
+                    ;; If COUNT is 0, `re-search-forward' validates the bound
+                    ;; and signals if it's invalid.  However, no actual search
+                    ;; seem to take place.  Instead, the start and end
+                    ;; positions of `match-data' is set to `point', and `point'
+                    ;; is returned..
+                    (set-match-data (list (set-marker (make-marker) (point))
+                                          (set-marker (make-marker) (point))))
+                    (point)))))
     (if pt
         (goto-char pt)
       (cl-case noerror
-        ((nil) (signal 'search-failed (list regexp)))
-        ((t) nil)
+        ((nil)
+         (signal 'search-failed (list regexp)))
+        ((t)
+         nil)
         (otherwise
          (if (> cnt 0)
              (goto-char end)
            (goto-char start)))))
     pt))
 
-(defun are--re-search-forward-forward (re str count)
+(defun are--re-search-forward-forward (re str offset count)
   "Do a forward search with `are-re-search-forward'."
-  (let ((offset 0)
+  (let ((start 0)
         mdata)
-    (dotimes (n count)
-      (setq mdata (are-match re (substring str offset)))
-      (unless mdata
-        (signal 'search-failed '()))
-      (setq mdata (are--adjust-match-data mdata (+ (point) offset)))
-      (setq offset (cadr mdata))
-      (are--set-match-data mdata t))
+    (while (> count 0)
+      (setq mdata (are-match re (substring str start)))
+      (if (null mdata)
+          (setq count 0)
+        (cl-decf count)
+        (setq mdata (are--adjust-match-data mdata (+ offset start)))
+        (setq start (- (cadr mdata) (point)))
+        (are--set-match-data mdata t)))
     mdata))
 
-(defun are--re-search-forward-backward (re str count)
+(defun are--re-search-forward-backward (re str offset count)
   "Do a backward search with `are-re-search-forward'."
   (let* ((start (length str))
          (end start)
          mdata)
-    (while (and (< count 0) (> start 0))
+    (while (and (< count 0) (>= start 0) (>= end 0))
       (setq mdata (are-match re (substring str start end)))
       (when mdata
-        (setq mdata (are--adjust-match-data mdata (+ (point) start)))
-        (setq end start)
+        (cl-incf count)
+
+        (if (null (eq start end))
+            (setq mdata (are--adjust-match-data mdata (+ offset start)))
+          ;; If we have a match in a zero-length string, the regexp is
+          ;; something akin to .* -- and in that case we may as well pretend
+          ;; that we have COUNT successful matches already since that is that
+          ;; would happen if we continue iterating until the end.
+          (setq mdata (are--adjust-match-data mdata (point) t))
+          (setq count 0))
+
         (are--set-match-data mdata t)
-        (cl-incf count))
+        (setq end start))
       (cl-decf start))
-    mdata))
+    (when (zerop count)
+      mdata)))
 
 (provide 'are)
 
