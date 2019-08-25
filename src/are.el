@@ -67,27 +67,6 @@
   "Return engine for a compiled REGEXP."
   (are--engine regexp))
 
-(defun are--adjust-match-data (mdata &optional start absolute)
-  "Add START to each element in MDATA.
-
-If ABSOLUTE is non-nil, set each element to START instead."
-  (mapcar (lambda (elt)
-            (if absolute
-                (or start 0)
-              (+ elt (or start 0))))
-          mdata))
-
-(defun are--set-match-data (mdata &optional use-markers)
-  "Set MDATA as match data.
-
-If USE-MARKERS is non-nil, a marker is created for each element
-in MDATA."
-  (set-match-data (mapcar (lambda (elt)
-                            (if use-markers
-                                (set-marker (make-marker) elt)
-                              elt))
-                          mdata)))
-
 (defun are-string-match (regexp string &optional start)
   "Search for REGEXP in STRING, starting at START.
 
@@ -202,6 +181,27 @@ See `re-search-backward'."
       (cl-decf start))
     (when (zerop count)
       mdata)))
+
+(defun are--adjust-match-data (mdata &optional start absolute)
+  "Add START to each element in MDATA.
+
+If ABSOLUTE is non-nil, set each element to START instead."
+  (mapcar (lambda (elt)
+            (if absolute
+                (or start 0)
+              (+ elt (or start 0))))
+          mdata))
+
+(defun are--set-match-data (mdata &optional use-markers)
+  "Set MDATA as match data.
+
+If USE-MARKERS is non-nil, a marker is created for each element
+in MDATA."
+  (set-match-data (mapcar (lambda (elt)
+                            (if use-markers
+                                (set-marker (make-marker) elt)
+                              elt))
+                          mdata)))
 
 (defun are--debug (fmt &rest args)
   "Print a debug message."
