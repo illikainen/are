@@ -23,7 +23,7 @@
   :type '(choice (const :tag "PCRE2" pcre2)))
 
 (defcustom are-compile-options
-  '((pcre2 . (pcre2-multiline pcre2-utf)))
+  '((pcre2 . (multiline utf)))
   "Default compile options."
   :group 'are
   :type 'list)
