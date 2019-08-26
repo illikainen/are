@@ -38,3 +38,6 @@ $ ./configure --prefix="$HOME/.emacs.d/are"
 $ make
 $ make install
 #+end_src
+
+To use ~are~, add the two subdirectories ~$HOME/.emacs.d/are/lib~ and
+~$HOME/.emacs.d/are/share/are~ to ~load-path~.
