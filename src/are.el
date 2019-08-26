@@ -97,7 +97,7 @@ With a prefix argument, the search is made backwards."
 ;;
 ;; `occur'.
 ;;
-(defun are-occur (&optional fn)
+(defun are-occur ()
   "Use `occur' with are."
   (interactive)
   (call-interactively #'occur))
