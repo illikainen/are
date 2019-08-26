@@ -38,6 +38,12 @@
   :group 'are
   :type 'boolean)
 
+(defvar are--debug-buffer "*are*"
+  "Name of the debug buffer.")
+
+(defvar are--debug-last nil
+  "Last debug message.")
+
 (defvar-local are--active nil
   "Whether ARE is used in the current buffer.")
 
@@ -287,7 +293,14 @@ in MDATA."
 (defun are--debug (fmt &rest args)
   "Print a debug message."
   (when are-debug
-    (apply #'message fmt args)))
+    (let ((str (apply #'format (concat fmt "\n") args)))
+      (unless (equal str are--debug-last)
+        (setq are--debug-last str)
+        (with-current-buffer (get-buffer-create are--debug-buffer)
+          (let ((inhibit-read-only t))
+            (save-excursion
+              (goto-char (point-max))
+              (insert str))))))))
 
 ;;
 ;; Minor mode.
