@@ -135,7 +135,7 @@ buffer from `get-buffer'."
 (defun are-match (regexp str &optional options)
   "Match STR with REGEXP and OPTIONS."
   (let* ((engine (are-engine regexp))
-         (options (alist-get engine are-match-options)))
+         (options (or options (alist-get engine are-match-options))))
     (are--match regexp str options)))
 
 (defun are-engine (regexp)
