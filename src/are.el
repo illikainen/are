@@ -195,6 +195,17 @@ in MDATA."
   (when are-debug
     (apply #'message fmt args)))
 
+;;
+;; Minor mode.
+;;
+(define-minor-mode are-mode
+  "Minor mode for ARE."
+  :init-value nil
+  :global t
+  (cl-case are-mode
+    ((t))
+    ((nil))))
+
 (provide 'are)
 
 ;;; are.el ends here
