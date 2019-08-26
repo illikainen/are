@@ -8,7 +8,7 @@ import sys
 from argparse import ArgumentParser
 from fnmatch import fnmatch
 from os import chdir
-from os.path import abspath, join
+from os.path import abspath, dirname, join
 from shutil import which
 from subprocess import STDOUT, CalledProcessError, check_output
 
@@ -58,6 +58,33 @@ def check_cppcheck():
     return code or len(msg)
 
 
+def check_elisp():
+    elisp = """
+    (let ((byte-compile-error-on-warn t))
+      (add-to-list 'load-path "{src}")
+      (add-to-list 'load-path "{lib}")
+      (check-declare-file "{path}")
+      (byte-compile-file "{path}")
+      (kill-emacs (and byte-compiler-error-flag 1)))
+    """
+    src = abspath(join(dirname(sys.argv[0]), "..", "src"))
+    lib = join(src, ".libs")
+    rv = 0
+
+    for path in ls("*.el"):
+        code, msg = run(
+            "emacs",
+            "-Q",
+            "--batch",
+            "--eval",
+            elisp.format(src=src, lib=lib, path=path).strip(),
+        )
+        if code:
+            sys.stderr.write(msg)
+            rv += code
+    return rv
+
+
 def fix_clang_format():
     code, _ = run("clang-format", "-i", *ls("*.[ch]"))
     return code
@@ -94,6 +121,7 @@ def parse_args():
     ap.add_argument("--check-clang-tidy", "--cct", action="store_true")
     ap.add_argument("--check-clang-format", "--ccf", action="store_true")
     ap.add_argument("--check-cppcheck", "--ccc", action="store_true")
+    ap.add_argument("--check-elisp", "--ce", action="store_true")
     ap.add_argument("--check-all", "--ca", action="store_true")
     ap.add_argument("--fix-all", "--fa", action="store_true")
     ap.add_argument("--fix-clang-format", "--fcf", action="store_true")
@@ -110,6 +138,7 @@ def main():
         rv += start(check_clang_tidy)
         rv += start(check_clang_format)
         rv += start(check_cppcheck)
+        rv += start(check_elisp)
     elif args.check_clang_analyzer:
         rv += start(check_clang_analyzer)
     elif args.check_clang_tidy:
@@ -118,6 +147,8 @@ def main():
         rv += start(check_clang_format)
     elif args.check_cppcheck:
         rv += start(check_cppcheck)
+    elif args.check_elisp:
+        rv += start(check_elisp)
     elif args.fix_all:
         rv += start(fix_clang_format)
     elif args.fix_clang_format:
