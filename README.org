@@ -15,12 +15,14 @@ users to override regexp functions through the use of ~advice~ or
 
 These functions have been implemented:
 
-| Emacs              | ARE                    |
-|--------------------+------------------------|
-| occur              | are-occur              |
-| re-search-backward | are-re-search-backward |
-| re-search-forward  | are-re-search-forward  |
-| string-match       | are-string-match       |
+| Emacs                   | ARE                         |
+|-------------------------+-----------------------------|
+| isearch-forward-regexp  | are-isearch-forward-regexp  |
+| isearch-backward-regexp | are-isearch-backward-regexp |
+| occur                   | are-occur                   |
+| re-search-backward      | are-re-search-backward      |
+| re-search-forward       | are-re-search-forward       |
+| string-match            | are-string-match            |
 
 
 ** Installation
@@ -57,5 +59,7 @@ Assuming that ~are~ was installed in ~$HOME/.emacs.d/are~:
 (are-mode t)
 
 ;; Example bindings.
+(define-key (current-global-map) (kbd "C-r") #'are-isearch-backward-regexp)
+(define-key (current-global-map) (kbd "C-s") #'are-isearch-forward-regexp)
 (define-key (current-global-map) (kbd "M-s o") #'are-occur)
 #+end_src

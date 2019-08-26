@@ -42,6 +42,59 @@
   "Whether ARE is used in the current buffer.")
 
 ;;
+;; `isearch-mode'
+;;
+(defun are-isearch-forward-regexp ()
+  "Search forward."
+  (interactive)
+  (let ((isearch-search-fun-function #'are-isearch-search-fun-function))
+    (isearch-forward-regexp)))
+
+(defun are-isearch-backward-regexp ()
+  "Search backward."
+  (interactive)
+  (let ((isearch-search-fun-function #'are-isearch-search-fun-function))
+    (isearch-backward-regexp)))
+
+(defun are-isearch-repeat-forward ()
+  "Repeat a search forwards."
+  (interactive)
+  (let ((isearch-search-fun-function #'are-isearch-search-fun-function))
+    (isearch-repeat-forward)))
+
+(defun are-isearch-repeat-backward ()
+  "Repeat a search backwards."
+  (interactive)
+  (let ((isearch-search-fun-function #'are-isearch-search-fun-function))
+    (isearch-repeat-backward)))
+
+(defun are-isearch-repeat (&optional arg)
+  "Repeat a search in the previous direction.
+
+With a prefix argument, the search repeats in the opposite
+direction."
+  (interactive "P")
+  (if (if arg (not isearch-forward) isearch-forward)
+      (are-isearch-repeat-forward)
+    (are-isearch-repeat-backward)))
+
+(defun are-isearch (&optional arg)
+  "Start an incremental search.
+
+With a prefix argument, the search is made backwards."
+  (interactive "P")
+  (if arg
+      (are-isearch-backward-regexp)
+    (are-isearch-forward-regexp)))
+
+(defun are-isearch-search-fun-function ()
+  "Return a search function for `isearch-mode'."
+  (lambda (regexp &optional bound noerror count)
+    (if isearch-forward
+        (are-re-search-forward regexp bound noerror count)
+      (are-re-search-backward regexp bound noerror count))))
+
+;;
 ;; `occur'.
 ;;
 (defun are-occur (&optional fn)
