@@ -153,7 +153,7 @@ See `string-match'."
                                             (if (and start (cl-minusp start))
                                                 (+ (length string) start)
                                               start))))
-        (are--set-match-data (or mdata '(0 0)))
+        (are--set-match-data mdata)
         (car mdata))
     (args-out-of-range
      ;; For compatibility with `string-match'.

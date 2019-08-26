@@ -39,6 +39,8 @@
       (are--debug "Evaluating engine: %S -- %S" (car elt) (cdr elt))
       (save-excursion
         (save-match-data
+          ;; Reset match data so we don't compare leftovers on failure.
+          (set-match-data nil)
           (condition-case err
               (let ((are-engine (car elt)))
                 (push (eval (cdr elt)) result)
