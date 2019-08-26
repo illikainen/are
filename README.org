@@ -57,5 +57,5 @@ Assuming that ~are~ was installed in ~$HOME/.emacs.d/are~:
 (are-mode t)
 
 ;; Example bindings.
-(define-key global-map (kbd "M-s o") #'are-occur)
+(define-key (current-global-map) (kbd "M-s o") #'are-occur)
 #+end_src
