@@ -7,8 +7,8 @@
 import sys
 from argparse import ArgumentParser
 from fnmatch import fnmatch
-from os import chdir
-from os.path import abspath, dirname, join
+from os import chdir, unlink
+from os.path import abspath, dirname, isfile, join, splitext
 from shutil import which
 from subprocess import STDOUT, CalledProcessError, check_output
 
@@ -82,6 +82,11 @@ def check_elisp():
         if code:
             sys.stderr.write(msg)
             rv += code
+
+        elc = ".".join([splitext(path)[0], "elc"])
+        if isfile(elc):
+            unlink(elc)
+
     return rv
 
 
