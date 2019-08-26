@@ -119,6 +119,25 @@
     "")
   "Test strings.")
 
+(ert-deftest are-test-looking-at ()
+  "Tests for `are-looking-at'."
+  (let ((case-fold-search nil))
+    (dolist (str are-test-strings)
+      (dolist (regexp are-test-regexps)
+        (with-temp-buffer
+          (insert str)
+          (let ((positions (list (point-min)
+                                 (+ (point-min) 1)
+                                 (+ (point-min) 5)
+                                 (point-max)
+                                 (- (point-max) 1)
+                                 (- (point-max) 5))))
+            (dolist (pos positions)
+              (goto-char pos)
+              (are-test-regexps
+               `((emacs . (looking-at ,(alist-get 'emacs regexp)))
+                 (pcre2 . (are-looking-at ,(alist-get 'pcre2 regexp))))))))))))
+
 (ert-deftest are-test-re-search ()
   "Tests for `are-re-search-forward' and `are-re-search-backward'."
   (let ((case-fold-search nil))

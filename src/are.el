@@ -142,6 +142,12 @@ buffer from `get-buffer'."
   "Return engine for a compiled REGEXP."
   (are--engine regexp))
 
+(defun are-looking-at (regexp)
+  "Return t if text after point matches REGEXP."
+  (save-excursion
+    (let ((are-compile-options '((pcre2 . (anchored)))))
+      (and (are-re-search-forward regexp (line-end-position) t) t))))
+
 (defun are-string-match (regexp string &optional start)
   "Search for REGEXP in STRING, starting at START.
 
