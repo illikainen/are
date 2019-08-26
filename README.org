@@ -17,6 +17,7 @@ These functions have been implemented:
 
 | Emacs              | ARE                    |
 |--------------------+------------------------|
+| occur              | are-occur              |
 | re-search-backward | are-re-search-backward |
 | re-search-forward  | are-re-search-forward  |
 | string-match       | are-string-match       |

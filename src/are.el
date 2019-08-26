@@ -38,6 +38,41 @@
   :group 'are
   :type 'boolean)
 
+(defvar-local are--active nil
+  "Whether ARE is used in the current buffer.")
+
+;;
+;; `occur'.
+;;
+(defun are-occur (&optional fn)
+  "Use `occur' with are."
+  (interactive)
+  (call-interactively #'occur))
+
+(defun are-occur-1 (fun regexp nlines bufs &optional buf-name)
+  "Advice for `occur-1'.
+
+The relevant regexp functions are let-bound if `occur-1' is (or
+was) invoked through `are-occur'.  Furthermore, a hook is
+temporarily added that prepares the resulting occur buffer for
+`revert-buffer' (hence the was).
+
+The reason for the temporary hook is that other hooks may change
+the name of the occur buffer before the original implementation
+of `occur-1' return, so the setup can't be done with an occur
+buffer from `get-buffer'."
+  (if (or (eq this-command 'are-occur)
+          (and (derived-mode-p 'occur-mode) are--active))
+      (cl-letf* (((symbol-function 're-search-forward) #'are-re-search-forward)
+                 ((symbol-function 'string-match) #'are-string-match)
+                 (hook (lambda () (setq are--active t)))
+                 (occur-mode-hook `(,hook ,@occur-mode-hook)))
+        (funcall fun regexp nlines bufs buf-name))
+    (funcall fun regexp nlines bufs buf-name)))
+
+;;
+;; Non-interactive functions.
+;;
 (defun are-compile (regexp &optional options engine)
   "Compile REGEXP with OPTIONS for ENGINE."
   (let* ((engine (or engine are-engine))
@@ -203,8 +238,10 @@ in MDATA."
   :init-value nil
   :global t
   (cl-case are-mode
-    ((t))
-    ((nil))))
+    ((t)
+     (advice-add 'occur-1 :around #'are-occur-1))
+    ((nil)
+     (advice-remove 'occur-1 #'are-occur-1))))
 
 (provide 'are)
 
