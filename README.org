@@ -40,5 +40,22 @@ $ make
 $ make install
 #+end_src
 
-To use ~are~, add the two subdirectories ~$HOME/.emacs.d/are/lib~ and
-~$HOME/.emacs.d/are/share/are~ to ~load-path~.
+
+** Usage
+
+Assuming that ~are~ was installed in ~$HOME/.emacs.d/are~:
+
+#+begin_src elisp
+(add-to-list 'load-path "~/emacs.d/are/lib")
+(add-to-list 'load-path "~/emacs.d/are/share/are")
+
+(require 'are)
+
+;; This is required to enable are-specific advice.  They should never
+;; interfere with the non-are versions of the relevant functions.  If
+;; they do, please send a bug report!
+(are-mode t)
+
+;; Example bindings.
+(define-key global-map (kbd "M-s o") #'are-occur)
+#+end_src
