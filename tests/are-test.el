@@ -117,7 +117,7 @@
     "")
   "Test strings.")
 
-(ert-deftest are-test-pcre2-re-search ()
+(ert-deftest are-test-re-search ()
   "Tests for `are-re-search-forward' and `are-re-search-backward'."
   (let ((case-fold-search nil))
     (dolist (str are-test-strings)
