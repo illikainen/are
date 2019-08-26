@@ -13,19 +13,23 @@ AC_DISABLE_STATIC
 LT_INIT
 
 # Base CFLAGS.
-CFLAGS="$CFLAGS -std=c11 -Wall -Wextra -Wpedantic -pedantic -Wno-extra-semi"
-CFLAGS="$CFLAGS -Werror=format-security -Werror=implicit-function-declaration"
-CFLAGS="$CFLAGS -fstack-protector-all -D_FORTIFY_SOURCE=2"
-CFLAGS="$CFLAGS -fdiagnostics-color=always"
+flg="-std=c11 -Wall -Wextra -Weverything -Wpedantic -pedantic"
+flg="$flg -Wno-extra-semi -Wno-disabled-macro-expansion -Wno-padded"
+flg="$flg -Werror=format-security -Werror=implicit-function-declaration"
+flg="$flg -fstack-protector-all -D_FORTIFY_SOURCE=2 -fdiagnostics-color=always"
 
-save_CFLAGS="$CFLAGS"
-CFLAGS="-Weverything"
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])], [have_everything="yes"])
-CFLAGS="$save_CFLAGS"
+for f in $flg; do
+    saved_cflags="$CFLAGS"
+    CFLAGS="$f"
+    AC_MSG_CHECKING([whether $f works])
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])], [have_f="yes"], [have_f="no"])
+    AC_MSG_RESULT([$have_f])
+    CFLAGS="$saved_cflags"
 
-if test "$have_everything" = "yes"; then
-    CFLAGS="$CFLAGS -Weverything -Wno-disabled-macro-expansion -Wno-padded"
-fi
+    if test "$have_f" = "yes"; then
+        CFLAGS="$CFLAGS $f"
+    fi
+done
 
 # Check for integer overflow check macros.
 AC_COMPILE_IFELSE(
