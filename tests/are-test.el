@@ -36,10 +36,11 @@
   "Format and print FMT with ARGS."
   (message "%s" (apply #'format fmt args)))
 
-(defun are-test-regexps (elts &optional str)
+(defun are-test-regexps (elts &optional str skip-match-data)
   "Compare the result of the sexps in ELTS.
 
-STR is used to compare match data for non-buffer searches."
+STR is used to compare match data for non-buffer searches.
+SKIP-MATCH-DATA causes the test to ignore `match-data'."
   (are-test-debug "\n\nTest %d" (cl-incf are-test-count))
   (let (emacs-result result)
     (dolist (elt elts)
@@ -52,12 +53,13 @@ STR is used to compare match data for non-buffer searches."
               (let ((are-engine (car elt)))
                 (push (eval (cdr elt)) result)
                 (push (point) result)
-                (push (match-data) result)
-                (dotimes (n (length (match-data)))
-                  (push (match-string n str) result)
-                  (push (match-string-no-properties n str) result)
-                  (push (match-beginning n) result)
-                  (push (match-end n) result)))
+                (unless skip-match-data
+                  (push (match-data) result)
+                  (dotimes (n (length (match-data)))
+                    (push (match-string n str) result)
+                    (push (match-string-no-properties n str) result)
+                    (push (match-beginning n) result)
+                    (push (match-end n) result))))
             (search-failed
              ;; Can't push `cdr' since it contains the failed regexp, which
              ;; won't necessarily match between engines.
