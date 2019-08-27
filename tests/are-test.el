@@ -12,6 +12,7 @@
 (require 'cl-lib)
 (require 'ert)
 (require 'map)
+(require 'subr-x)
 
 (defvar are-src-dir
   (concat (file-name-directory
@@ -235,6 +236,30 @@ SKIP-MATCH-DATA causes the test to ignore `match-data'."
   "Tests for `are-compile'."
   (should (eq (type-of (are-compile ".*")) 'user-ptr))
   (should-error (are-compile "(") :type 'invalid-regexp))
+
+(ert-deftest are-test-occur ()
+  "Test for `are-occur'."
+  (let ((case-fold-search nil))
+    (dolist (str are-test-strings)
+      (dolist (regexp are-test-regexps)
+        (let ((test-fun (lambda (engine)
+                          (with-temp-buffer
+                            (insert str)
+                            (if (eq engine 'emacs)
+                                (occur (alist-get engine regexp))
+                              (are-occur (alist-get engine regexp)))
+                            (when-let ((buf (get-buffer "*Occur*")))
+                              (with-current-buffer buf
+                                (goto-char (point-min))
+                                ;; The first line shows the regexp.
+                                (forward-line 1)
+                                (prog1
+                                    (buffer-substring (point) (point-max))
+                                  (kill-buffer buf))))))))
+          (are-test-regexps
+           `((emacs . (funcall #',test-fun 'emacs))
+             (pcre2 . (funcall #',test-fun 'pcre2)))
+           nil t))))))
 
 (provide 'are-test)
 

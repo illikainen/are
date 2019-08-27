@@ -145,15 +145,20 @@ With a non-nil ARG the search is made backwards."
 ;;
 ;; `occur'.
 ;;
-(defun are-occur ()
-  "Use `occur' with are."
-  (interactive)
-  (call-interactively #'occur))
+(defun are-occur (regexp &optional nlines region)
+  "Use occur with are.
+
+See `occur' for an explanation of REGEXP, NLINES and REGION."
+  (interactive
+   (nconc (occur-read-primary-args)
+          (and (use-region-p) (list (region-bounds)))))
+  (setq this-command #'are-occur)
+  (occur regexp nlines region))
 
 (defun are-occur-1 (fun regexp nlines bufs &optional buf-name)
   "Advice for `occur-1'.
 
-The relevant regexp functions are let-bound if `occur-1' is (or
+The built-in regexp functions are overridden if `occur-1' is (or
 was) invoked through `are-occur'.  Furthermore, a hook is
 temporarily added that prepares the resulting occur buffer for
 `revert-buffer' (hence the was).
@@ -167,11 +172,10 @@ See `occur-1' for a description of FUN REGEXP NLINES BUFS and
 BUF-NAME."
   (if (or (eq this-command 'are-occur)
           (and (derived-mode-p 'occur-mode) are--active))
-      (cl-letf* (((symbol-function 're-search-forward) #'are-re-search-forward)
-                 ((symbol-function 'string-match) #'are-string-match)
-                 (hook (lambda () (setq are--active t)))
-                 (occur-mode-hook `(,hook ,@occur-mode-hook)))
-        (funcall fun regexp nlines bufs buf-name))
+      (are-override #'occur-engine regexp
+        (let* ((hook (lambda () (setq are--active t)))
+               (occur-mode-hook `(,hook ,@occur-mode-hook)))
+          (funcall fun regexp nlines bufs buf-name)))
     (funcall fun regexp nlines bufs buf-name)))
 
 ;;
