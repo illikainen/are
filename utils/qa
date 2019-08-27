@@ -63,6 +63,9 @@ def check_elisp():
     (let ((byte-compile-error-on-warn t))
       (add-to-list 'load-path "{src}")
       (add-to-list 'load-path "{lib}")
+      (setq checkdoc-spellcheck-documentation-flag t)
+      (setq checkdoc-verb-check-experimental-flag nil)
+      (checkdoc-file "{path}")
       (check-declare-file "{path}")
       (byte-compile-file "{path}")
       (kill-emacs (and byte-compiler-error-flag 1)))
@@ -78,10 +81,11 @@ def check_elisp():
             "--batch",
             "--eval",
             elisp.format(src=src, lib=lib, path=path).strip(),
+            stderr=STDOUT,
         )
-        if code:
+        if code or msg:
             sys.stderr.write(msg)
-            rv += code
+            rv += 1
 
         elc = ".".join([splitext(path)[0], "elc"])
         if isfile(elc):

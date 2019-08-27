@@ -4,6 +4,10 @@
 ;;
 ;; SPDX-License-Identifier: GPL-3.0-or-later
 
+;;; Commentary:
+;;
+;; Tests for ARE.
+
 ;;; Code:
 (require 'cl-lib)
 (require 'ert)
@@ -32,7 +36,9 @@
 (require 'are)
 
 (defun are-test-regexps (elts &optional str)
-  "Compare the result of the sexps in ELTS."
+  "Compare the result of the sexps in ELTS.
+
+STR is used to compare match data for non-buffer searches."
   (are--debug "\n\nTest %d" (cl-incf are-test-count))
   (let (emacs-result result)
     (dolist (elt elts)

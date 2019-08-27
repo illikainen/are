@@ -34,7 +34,7 @@
   :type 'list)
 
 (defcustom are-debug nil
-  "Whether to show debug messages"
+  "Whether to show debug messages."
   :group 'are
   :type 'boolean)
 
@@ -77,24 +77,23 @@
 (defun are-isearch-repeat (&optional arg)
   "Repeat a search in the previous direction.
 
-With a prefix argument, the search repeats in the opposite
-direction."
+With a non-nil ARG the search repeats in the opposite direction."
   (interactive "P")
   (if (if arg (not isearch-forward) isearch-forward)
       (are-isearch-repeat-forward)
     (are-isearch-repeat-backward)))
 
 (defun are-isearch (&optional arg)
-  "Start an incremental search.
+  "Start an incremental search forwards.
 
-With a prefix argument, the search is made backwards."
+With a non-nil ARG the search is made backwards."
   (interactive "P")
   (if arg
       (are-isearch-backward-regexp)
     (are-isearch-forward-regexp)))
 
 (defun are-isearch-search-fun-function ()
-  "Return a search function for `isearch-mode'."
+  "Return a search function for isearch."
   (lambda (regexp &optional bound noerror count)
     (if isearch-forward
         (are-re-search-forward regexp bound noerror count)
@@ -119,7 +118,10 @@ temporarily added that prepares the resulting occur buffer for
 The reason for the temporary hook is that other hooks may change
 the name of the occur buffer before the original implementation
 of `occur-1' return, so the setup can't be done with an occur
-buffer from `get-buffer'."
+buffer from `get-buffer'.
+
+See `occur-1' for a description of FUN REGEXP NLINES BUFS and
+BUF-NAME."
   (if (or (eq this-command 'are-occur)
           (and (derived-mode-p 'occur-mode) are--active))
       (cl-letf* (((symbol-function 're-search-forward) #'are-re-search-forward)
@@ -149,7 +151,7 @@ buffer from `get-buffer'."
   (are--engine regexp))
 
 (defun are-looking-at (regexp)
-  "Return t if text after point matches REGEXP."
+  "Return t if the text after point match REGEXP."
   (save-excursion
     (let ((are-compile-options '((pcre2 . (anchored)))))
       (and (are-re-search-forward regexp (line-end-position) t) t))))
@@ -174,7 +176,8 @@ See `string-match'."
 (defun are-re-search-forward (regexp &optional bound noerror count)
   "Search forward from `point' for REGEXP.
 
-See `re-search-forward'."
+See `re-search-forward' for a description of BOUND NOERROR and
+COUNT."
   (let* ((re (are-compile regexp))
          (cnt (or count 1))
          (start (cond ((> cnt 0)
@@ -227,11 +230,12 @@ See `re-search-forward'."
 (defun are-re-search-backward (regexp &optional bound noerror count)
   "Search backward from `point' for REGEXP.
 
-See `re-search-backward'."
+See `re-search-backward' for a description of BOUND NOERROR and
+COUNT."
   (are-re-search-forward regexp bound noerror (- (or count 1))))
 
 (defun are--re-search-forward (re str offset count)
-  "Do a forward search with `are-re-search-forward'."
+  "Search forward for COUNT matches for RE in STR with OFFSET."
   (let ((start 0)
         mdata)
     (while (> count 0)
@@ -245,7 +249,7 @@ See `re-search-backward'."
     mdata))
 
 (defun are--re-search-backward (re str offset count)
-  "Do a backward search with `are-re-search-forward'."
+  "Search backward for COUNT matches for RE in STR with OFFSET."
   (let* ((start (length str))
          (end start)
          mdata)
@@ -291,7 +295,7 @@ in MDATA."
                           mdata)))
 
 (defun are--debug (fmt &rest args)
-  "Print a debug message."
+  "Format FMT with ARGS and insert it in `are--debug-buffer'."
   (when are-debug
     (let ((str (apply #'format (concat fmt "\n") args)))
       (unless (equal str are--debug-last)
