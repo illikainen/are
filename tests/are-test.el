@@ -13,9 +13,6 @@
 (require 'ert)
 (require 'map)
 
-(defvar are-debug t
-  "Debug messages.")
-
 (defvar are-src-dir
   (concat (file-name-directory
            (directory-file-name
@@ -35,14 +32,18 @@
 
 (require 'are)
 
+(defun are-test-debug (fmt &rest args)
+  "Format and print FMT with ARGS."
+  (message "%s" (apply #'format fmt args)))
+
 (defun are-test-regexps (elts &optional str)
   "Compare the result of the sexps in ELTS.
 
 STR is used to compare match data for non-buffer searches."
-  (are--debug "\n\nTest %d" (cl-incf are-test-count))
+  (are-test-debug "\n\nTest %d" (cl-incf are-test-count))
   (let (emacs-result result)
     (dolist (elt elts)
-      (are--debug "Evaluating engine: %S -- %S" (car elt) (cdr elt))
+      (are-test-debug "Evaluating engine: %S -- %S" (car elt) (cdr elt))
       (save-excursion
         (save-match-data
           ;; Reset match data so we don't compare leftovers on failure.
@@ -60,15 +61,15 @@ STR is used to compare match data for non-buffer searches."
             (search-failed
              ;; Can't push `cdr' since it contains the failed regexp, which
              ;; won't necessarily match between engines.
-             (are--debug "Error: %S: %S" (car elt) err))
+             (are-test-debug "Error: %S: %S" (car elt) err))
             (error
              (push err result)))))
       (cond ((eq (car elt) 'emacs)
              (setq emacs-result result)
              (setq result nil))
             (t
-             (are--debug "Emacs result: %S" emacs-result)
-             (are--debug "Other result: %S" result)
+             (are-test-debug "Emacs result: %S" emacs-result)
+             (are-test-debug "Other result: %S" result)
              (should (equal result emacs-result)))))))
 
 (defun are-test-ucs-code (name)
