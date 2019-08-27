@@ -21,6 +21,7 @@ These functions have been implemented:
 | isearch-backward-regexp | are-isearch-backward-regexp |
 | occur                   | are-occur                   |
 | looking-at              | are-looking-at              |
+| looking-at-p            | are-looking-at-p            |
 | re-search-backward      | are-re-search-backward      |
 | re-search-forward       | are-re-search-forward       |
 | string-match            | are-string-match            |

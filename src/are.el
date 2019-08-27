@@ -156,6 +156,13 @@ BUF-NAME."
     (let ((are-compile-options '((pcre2 . (anchored)))))
       (and (are-re-search-forward regexp (line-end-position) t) t))))
 
+(defun are-looking-at-p (regexp)
+  "Return t if the text after point match REGEXP.
+
+This function preserves match data.  See `looking-at-p'."
+  (save-match-data
+    (are-looking-at regexp)))
+
 (defun are-string-match (regexp string &optional start)
   "Search for REGEXP in STRING, starting at START.
 

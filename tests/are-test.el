@@ -126,7 +126,7 @@ STR is used to compare match data for non-buffer searches."
   "Test strings.")
 
 (ert-deftest are-test-looking-at ()
-  "Tests for `are-looking-at'."
+  "Tests for `are-looking-at' and `are-looking-at-p'."
   (let ((case-fold-search nil))
     (dolist (str are-test-strings)
       (dolist (regexp are-test-regexps)
@@ -140,6 +140,10 @@ STR is used to compare match data for non-buffer searches."
                                  (- (point-max) 5))))
             (dolist (pos positions)
               (goto-char pos)
+              (are-test-regexps
+               `((emacs . (looking-at-p ,(alist-get 'emacs regexp)))
+                 (pcre2 . (are-looking-at-p ,(alist-get 'pcre2 regexp)))))
+
               (are-test-regexps
                `((emacs . (looking-at ,(alist-get 'emacs regexp)))
                  (pcre2 . (are-looking-at ,(alist-get 'pcre2 regexp))))))))))))
