@@ -237,6 +237,27 @@ SKIP-MATCH-DATA causes the test to ignore `match-data'."
   (should (eq (type-of (are-compile ".*")) 'user-ptr))
   (should-error (are-compile "(") :type 'invalid-regexp))
 
+(ert-deftest are-test-hi-lock-face-buffer ()
+  "Test for `are-hi-lock-face-buffer'."
+  (let ((case-fold-search nil))
+    (dolist (str are-test-strings)
+      (dolist (regexp are-test-regexps)
+        (let ((test-fun (lambda (engine)
+                          (with-temp-buffer
+                            (insert str)
+                            (let ((pattern (alist-get engine regexp)))
+                              ;; Emacs breaks on hi-lock patterns like .*
+                              (unless (member pattern '(".*" "(.*)" "\\(.*\\)"))
+                                (if (eq engine 'emacs)
+                                    (hi-lock-face-buffer pattern 'hi-yellow)
+                                  (are-hi-lock-face-buffer pattern 'hi-yellow))
+                                (length (overlays-in (point-min)
+                                                     (point-max)))))))))
+          (are-test-regexps
+           `((emacs . (funcall #',test-fun 'emacs))
+             (pcre2 . (funcall #',test-fun 'pcre2)))
+           nil t))))))
+
 (ert-deftest are-test-occur ()
   "Test for `are-occur'."
   (let ((case-fold-search nil))

@@ -17,6 +17,8 @@ These functions have been implemented:
 
 | Emacs                   | ARE                         |
 |-------------------------+-----------------------------|
+| hi-lock-face-buffer     | are-hi-lock-face-buffer     |
+| hi-lock-unface-buffer   | are-hi-lock-unface-buffer   |
 | isearch-forward-regexp  | are-isearch-forward-regexp  |
 | isearch-backward-regexp | are-isearch-backward-regexp |
 | occur                   | are-occur                   |
@@ -62,6 +64,7 @@ Assuming that ~are~ was installed in ~$HOME/.emacs.d/are~:
 (are-mode t)
 
 ;; Example bindings.
+(define-key (current-global-map) (kbd "C-c h") #'are-hi-lock-face-buffer)
 (define-key (current-global-map) (kbd "C-r") #'are-isearch-backward-regexp)
 (define-key (current-global-map) (kbd "C-s") #'are-isearch-forward-regexp)
 (define-key (current-global-map) (kbd "M-s o") #'are-occur)

@@ -91,6 +91,31 @@ equal to REGEXP."
      ,@body))
 
 ;;
+;; `hi-lock-mode'
+;;
+(declare-function hi-lock-read-face-name "hi-lock")
+(declare-function hi-lock-regexp-okay "hi-lock")
+(declare-function hi-lock-set-pattern "hi-lock")
+
+(defun are-hi-lock-face-buffer (&optional regexp face)
+  "Highlight each match of REGEXP with FACE."
+  (interactive)
+  (require 'hi-lock)
+  (let ((regexp (or regexp (read-regexp "Regexp to highlight" 'regexp-history)))
+        (face (or face (hi-lock-read-face-name)))
+        ;; If hi-lock detects that `font-lock-mode' is enabled it will add the
+        ;; patterns as font-lock keywords, which would circumvent ARE.
+        font-lock-mode)
+    (when (hi-lock-regexp-okay regexp)
+      (are-override #'hi-lock-set-pattern regexp
+        (hi-lock-set-pattern regexp face)))))
+
+(defun are-hi-lock-unface-buffer ()
+  "Remove highlighting of REGEXP."
+  (interactive)
+  (call-interactively #'hi-lock-unface-buffer))
+
+;;
 ;; `isearch-mode'
 ;;
 (defun are-isearch-forward-regexp ()
