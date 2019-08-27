@@ -196,7 +196,7 @@ STR is used to compare match data for non-buffer searches."
                                  ,count))))))))))))))
 
 (ert-deftest are-test-string-match ()
-  "Test for `are-string-match'."
+  "Test for `are-string-match' and `are-string-match-p'."
   (let ((case-fold-search nil))
     (dolist (str are-test-strings)
       (let ((starts (list -100 -10 -2 -1 0 1 2 (length str)
@@ -208,6 +208,13 @@ STR is used to compare match data for non-buffer searches."
                                       ,str ,start))
                (pcre2 . (are-string-match ,(alist-get 'pcre2 regexp)
                                           ,str ,start)))
+             str)
+
+            (are-test-regexps
+             `((emacs . (string-match-p ,(alist-get 'emacs regexp)
+                                        ,str ,start))
+               (pcre2 . (are-string-match-p ,(alist-get 'pcre2 regexp)
+                                            ,str ,start)))
              str)))))))
 
 (ert-deftest are-test-engine ()

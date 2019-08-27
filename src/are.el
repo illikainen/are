@@ -173,6 +173,13 @@ See `string-match'."
      ;; For compatibility with `string-match'.
      (signal (car err) (list (cadr err) (caddr err))))))
 
+(defun are-string-match-p (regexp string &optional start)
+  "Search for REGEXP in STRING, starting at START.
+
+This preserves the match data.  See `string-match-p'."
+  (save-match-data
+    (are-string-match regexp string start)))
+
 (defun are-re-search-forward (regexp &optional bound noerror count)
   "Search forward from `point' for REGEXP.
 

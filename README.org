@@ -24,6 +24,7 @@ These functions have been implemented:
 | re-search-backward      | are-re-search-backward      |
 | re-search-forward       | are-re-search-forward       |
 | string-match            | are-string-match            |
+| string-match-p          | are-string-match-p          |
 
 
 ** Installation
