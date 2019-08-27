@@ -47,6 +47,49 @@
 (defvar-local are--active nil
   "Whether ARE is used in the current buffer.")
 
+(defmacro are-override (callers regexp &rest body)
+  "Temporarily override built-in regexp functions and execute BODY.
+
+The conditions for overriding the built-in functions are that the
+caller must be one of CALLERS and its regular expression must be
+equal to REGEXP."
+  (declare (indent defun))
+  `(cl-letf* ((callers (if (consp ,callers)
+                           ,callers
+                         (list ,callers)))
+              (f (lambda (or-fun orig-fun)
+                   (lambda (reg &rest args)
+                     (let* ((sym (intern (subr-name orig-fun)))
+                            (frame (backtrace-frame 1 sym))
+                            (fun (cadr frame)))
+                       (if (and (memq fun callers) (equal ,regexp reg))
+                           (apply or-fun reg args)
+                         (are--debug "%S: not overriding for '%S'"
+                                     (if (symbolp fun)
+                                         fun
+                                       (type-of fun))
+                                    reg)
+                         (apply orig-fun reg args))))))
+              (orig-looking-at (symbol-function 'looking-at))
+              (orig-looking-at-p (symbol-function 'looking-at-p))
+              (orig-re-search-forward (symbol-function 're-search-forward))
+              (orig-re-search-backward (symbol-function 're-search-backward))
+              (orig-string-match (symbol-function 'string-match))
+              (orig-string-match-p (symbol-function 'string-match-p))
+              ((symbol-function 'looking-at)
+               (funcall f #'are-looking-at orig-looking-at))
+              ((symbol-function 'looking-at-p)
+               (funcall f #'are-looking-at-p orig-looking-at-p))
+              ((symbol-function 're-search-forward)
+               (funcall f #'are-re-search-forward orig-re-search-forward))
+              ((symbol-function 're-search-backward)
+               (funcall f #'are-re-search-backward orig-re-search-backward))
+              ((symbol-function 'string-match)
+               (funcall f #'are-string-match orig-string-match))
+              ((symbol-function 'string-match-p)
+               (funcall f #'are-string-match-p orig-string-match-p)))
+     ,@body))
+
 ;;
 ;; `isearch-mode'
 ;;
