@@ -45,6 +45,9 @@ SKIP-MATCH-DATA causes the test to ignore `match-data'."
   (let (emacs-result result)
     (dolist (elt elts)
       (are-test-debug "Evaluating engine: %S -- %S" (car elt) (cdr elt))
+      (if (eq (car elt) 'emacs)
+          (are-mode 0)
+        (are-mode 1))
       (save-excursion
         (save-match-data
           ;; Reset match data so we don't compare leftovers on failure.
