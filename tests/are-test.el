@@ -284,6 +284,43 @@ SKIP-MATCH-DATA causes the test to ignore `match-data'."
              (pcre2 . (funcall #',test-fun 'pcre2)))
            nil t))))))
 
+(ert-deftest are-test-benchmark ()
+  "A few basic benchmarks."
+  (with-temp-buffer
+    (insert (car are-test-strings))
+
+    (are-test-debug "benchmark for `re-search-forward' with built-in: %S"
+                    (benchmark-run-compiled 100000
+                      (goto-char (point-min))
+                      (re-search-forward "\\([0-9][0-9]\\)\\(.*\\)")))
+    (setq are-engine 'pcre2)
+    (are-test-debug "benchmark for `re-search-forward' with pcre2: %S"
+                    (benchmark-run-compiled 100000
+                      (goto-char (point-min))
+                      (are-re-search-forward "([0-9][0-9])(.*)")))
+
+    (are-test-debug "benchmark for `re-search-backward' with built-in: %S"
+                    (benchmark-run-compiled 10000
+                      (goto-char (point-max))
+                      (re-search-backward "\\([0-9][0-9]\\)\\(.*\\)")))
+    (setq are-engine 'pcre2)
+    (are-test-debug "benchmark for `re-search-backward' with pcre2: %S"
+                    (benchmark-run-compiled 10000
+                      (goto-char (point-max))
+                      (are-re-search-backward "([0-9][0-9])(.*)"))))
+
+  (are-test-debug "benchmark for `string-match' with built-in: %S"
+                  (benchmark-run-compiled 100000
+                    (with-no-warnings
+                      (string-match "\\([0-9][0-9]\\)\\(.*\\)"
+                                    (car are-test-strings)))))
+  (setq are-engine 'pcre2)
+  (are-test-debug "benchmark for `string-match' with pcre2: %S"
+                  (benchmark-run-compiled 100000
+                    (with-no-warnings
+                      (are-string-match "([0-9][0-9])(.*)"
+                                        (car are-test-strings))))))
+
 (provide 'are-test)
 
 ;;; are-test.el ends here
