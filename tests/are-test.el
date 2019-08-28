@@ -33,6 +33,8 @@
 
 (require 'are)
 
+(setq are-debug t)
+
 (defun are-test-debug (fmt &rest args)
   "Format and print FMT with ARGS."
   (message "%s" (apply #'format fmt args)))
