@@ -91,6 +91,16 @@ equal to REGEXP."
      ,@body))
 
 ;;
+;; `anzu-mode'
+;;
+(defun are-anzu--update (fun query)
+  "Use ARE for FUN with QUERY."
+  (if (eq isearch-search-fun-function #'are-isearch-search-fun-function)
+      (are-override '(anzu--search-all-position anzu--validate-regexp) query
+        (funcall fun query))
+    (funcall fun query)))
+
+;;
 ;; `hi-lock-mode'
 ;;
 (declare-function hi-lock-read-face-name "hi-lock")
@@ -401,8 +411,10 @@ in MDATA."
   :global t
   (cl-case are-mode
     ((t)
+     (advice-add 'anzu--update :around #'are-anzu--update)
      (advice-add 'occur-1 :around #'are-occur-1))
     ((nil)
+     (advice-remove 'anzu--update #'are-anzu--update)
      (advice-remove 'occur-1 #'are-occur-1))))
 
 (provide 'are)
