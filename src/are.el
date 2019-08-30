@@ -348,7 +348,7 @@ COUNT."
             (setq mdata (are--adjust-match-data mdata (+ offset start)))
           ;; If we have a match in a zero-length string, the regexp is
           ;; something akin to .* -- and in that case we may as well pretend
-          ;; that we have COUNT successful matches already since that is that
+          ;; that we have COUNT successful matches already since that is what
           ;; would happen if we continue iterating until the end.
           (setq mdata (are--adjust-match-data mdata (point) t))
           (setq count 0))
